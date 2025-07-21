@@ -18,6 +18,26 @@ The system uses `inotifywait` to monitor file changes in the project directory. 
 4. Pulls the latest changes from GitHub with rebase
 5. Pushes the changes to GitHub (with force if necessary)
 
+## Using the Auto-Push System
+
+### Automatic Method (Systemd Service)
+
+If the systemd service is not working correctly, you can use the manual method below.
+
+### Manual Method
+
+You can run the auto-push script manually at any time:
+
+```
+./auto_git_push.sh
+```
+
+This is the most reliable method and will:
+1. Add all changes
+2. Commit with a timestamp
+3. Pull latest changes from GitHub
+4. Push your changes to GitHub
+
 ## Managing the Service
 
 ### Check Service Status
@@ -67,10 +87,15 @@ If you encounter issues with the auto-push system:
    ./auto_git_push.sh
    ```
 
-## Manual Operation
+### Common Issues
 
-You can also run the auto-push script manually at any time:
+1. **Dubious ownership error**:
+   ```
+   git config --global --add safe.directory /home/gobotuser/go/src/mygotelegrambot
+   ```
 
-```
-./auto_git_push.sh
-``` 
+2. **Authentication issues**:
+   Set up a GitHub personal access token or SSH key for authentication
+
+3. **Non-fast-forward errors**:
+   The script includes logic to handle this by trying to pull first and using --force-with-lease if needed 
