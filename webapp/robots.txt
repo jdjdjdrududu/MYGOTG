@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /media_storage/
+Disallow: /lottie/ 

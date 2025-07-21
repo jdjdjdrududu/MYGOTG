@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Вывоз мусора, демонтаж и другие услуги в Крыму">
+    <meta name="theme-color" content="#007aff">
+    <title>Сервис-Крым Web App</title>
+    <!-- PWA Support -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <!-- External Libraries -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js" defer></script>
+    <link rel="stylesheet" href="style.css?v=1.1">
+</head>
+<body>
+<div id="top-progress-bar" class="hidden"></div>
+<div id="app-container">
+    <div id="error-message" class="error-container hidden"></div>
+
+    <div id="orders-panel" class="panel visible">
+        <header class="panel-header">
+            <h2>Заказы</h2>
+        </header>
+
+        <div class="status-tabs-container">
+            <div class="swiper-container" id="status-tabs-swiper">
+                <div class="swiper-wrapper" id="status-tabs-wrapper">
+                </div>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <div id="lottie-search-icon-orders" class="lottie-search-icon"></div>
+                <input type="search" id="orders-search-input" placeholder="Поиск по ID, имени, адресу...">
+            </div>
+        </div>
+
+        <div class="swiper-container" id="orders-content-swiper">
+            <div class="swiper-wrapper" id="orders-content-wrapper">
+            </div>
+        </div>
+    </div>
+
+    <button id="fab-create-order" class="fab-create-order" title="Создать заказ">
+        <span id="fab-plus-lottie"></span>
+    </button>
+    <button id="fab-create-staff" class="fab-create-order hidden" title="Добавить сотрудника">
+        <span id="fab-plus-staff-lottie"></span>
+    </button>
+
+    <div id="add-staff-modal-overlay" class="modal-overlay hidden">
+        <div id="add-staff-modal-window" class="modal-window">
+            <button id="close-staff-modal" class="close-modal-btn">&times;</button>
+            <h2 id="add-staff-modal-title">Добавить сотрудника</h2>
+            <div class="modal-form-container">
+                <form id="add-staff-form">
+                    <fieldset>
+                        <legend>Личные данные</legend>
+                        <div class="form-group">
+                            <input type="text" id="staff-first-name" name="FirstName" required placeholder="Имя">
+                            <label for="staff-first-name">Имя</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="staff-last-name" name="LastName" required placeholder="Фамилия">
+                            <label for="staff-last-name">Фамилия</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="staff-phone" name="Phone" placeholder="+79780000000" required>
+                            <label for="staff-phone">Телефон</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="staff-card-number" name="CardNumber" placeholder="Для выплат (необязательно)">
+                            <label for="staff-card-number">Номер карты</label>
+                        </div>
+                    </fieldset>
+                    <div class="form-actions">
+                        <button type="submit" class="button-primary">Добавить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="order-creation-panel" class="panel">
+        <header class="panel-header">
+            <button class="back-button" data-target-panel="orders-panel">‹</button>
+            <h2>Создание заказа</h2>
+        </header>
+        <div class="form-content-wrapper">
+            <form id="create-order-form">
+                <fieldset>
+                    <legend>Данные клиента</legend>
+                    <div class="form-group">
+                        <input type="text" id="order-name" name="name" placeholder=" " required>
+                        <label for="order-name">Имя для заказа</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" id="order-phone" name="phone" placeholder=" " required>
+                        <label for="order-phone">Телефон</label>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Детали услуги</legend>
+                    <div class="form-group-inline">
+                        <div class="form-group">
+                            <select id="category-select" name="category" required>
+                                <option value="" disabled selected></option>
+                                <option value="waste_removal">Вывоз мусора</option>
+                                <option value="demolition">Демонтаж</option>
+                            </select>
+                            <label for="category-select">Категория</label>
+                        </div>
+                        <div class="form-group">
+                            <select id="subcategory-select" name="subcategory" required>
+                                <option value="" disabled selected></option>
+                            </select>
+                            <label for="subcategory-select">Подкатегория</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="order-address" name="address" placeholder=" " required>
+                        <label for="order-address">Адрес</label>
+                    </div>
+                    <div class="form-group-inline">
+                        <div class="form-group">
+                            <input type="date" id="order-date" name="date" placeholder=" " required>
+                            <label for="order-date">Дата</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="time" id="order-time" name="time" placeholder=" " required>
+                            <label for="order-time">Время</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="order-description" name="description" rows="3" placeholder=" "></textarea>
+                        <label for="order-description">Описание</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" id="order-cost" name="cost" placeholder=" " min="0">
+                        <label for="order-cost">Стоимость (₽)</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="static-label">Фото/Видео (для оценки стоимости)</label>
+                        <div id="operator-media-swiper" class="swiper-container media-preview-swiper">
+                            <div class="swiper-wrapper"></div>
+                            <div class="swiper-pagination"></div>
+                        </div>
+                        <div class="media-buttons-container" data-form-type="operator">
+                            <button type="button" class="button-secondary-media take-photo">
+                                <i class="fa-solid fa-camera"></i> Сделать фото
+                            </button>
+                            <button type="button" class="button-secondary-media choose-gallery">
+                                <i class="fa-solid fa-images"></i> Из галереи
+                            </button>
+                        </div>
+                    </div>
+                </fieldset>
+                <div class="form-actions">
+                    <button type="submit" class="button-primary">Создать заказ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="clients-panel" class="panel">
+        <header class="panel-header">
+            <button class="back-button" data-target-panel="orders-panel">‹</button>
+            <h2>Клиенты</h2>
+        </header>
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <div id="lottie-search-icon-clients" class="lottie-search-icon"></div>
+                <input type="search" id="clients-search-input" placeholder="Поиск по имени, телефону, ID...">
+            </div>
+        </div>
+        <ul id="clients-list" class="content-list"></ul>
+    </div>
+
+    <div id="client-detail-panel" class="panel">
+        <header class="panel-header">
+            <button class="back-button" data-target-panel="clients-panel">‹</button>
+            <h2 id="client-detail-name">Детали клиента</h2>
+        </header>
+        <div id="client-details-content"></div>
+        <div class="client-actions">
+            <button class="button-primary" id="create-order-for-client-btn"><i class="fa-solid fa-plus"></i> Создать заказ</button>
+            <button class="button-primary" id="view-client-chats-btn"><i class="fa-solid fa-comments"></i> Посмотреть чаты</button>
+            <button class="button-primary button-danger" id="block-client-btn"><i class="fa-solid fa-user-lock"></i> Заблокировать</button>
+            <button class="button-primary button-success hidden" id="unblock-client-btn"><i class="fa-solid fa-user-check"></i> Разблокировать</button>
+        </div>
+        <h3>Последние заказы</h3>
+        <ul id="client-orders-list" class="content-list"></ul>
+    </div>
+
+    <div id="staff-hub-panel" class="panel">
+        <header class="panel-header">
+            <button class="back-button" data-target-panel="orders-panel">‹</button>
+            <h2>Штат</h2>
+        </header>
+        <div class="staff-categories">
+            <button class="role-category-btn" data-role="main_operator">
+                <i class="fa-solid fa-user-tie"></i>
+                <span>Главные операторы</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <button class="role-category-btn" data-role="operator">
+                <i class="fa-solid fa-headset"></i>
+                <span>Операторы</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <button class="role-category-btn" data-role="driver">
+                <i class="fa-solid fa-car"></i>
+                <span>Водители</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+            <button class="role-category-btn" data-role="loader">
+                <i class="fa-solid fa-boxes-packing"></i>
+                <span>Грузчики</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="staff-list-panel" class="panel">
+        <header class="panel-header">
+            <button class="back-button" data-target-panel="staff-hub-panel">‹</button>
+            <h2 id="staff-list-title">Сотрудники</h2>
+        </header>
+        <ul id="staff-list" class="content-list"></ul>
+    </div>
+
+    <div id="order-detail-panel" class="panel">
+        <header class="panel-header">
+            <button class="back-button" data-target-panel="orders-panel">‹</button>
+            <h2 id="order-detail-title">Заказ №...</h2>
+            <span id="order-detail-status-badge" class="order-status-badge"></span>
+        </header>
+        <div class="lottie-order-anim" id="lottie-order-anim"></div>
+        <div id="order-details-content" class="details-grid">
+            <dl>
+                <dt>Категория</dt><dd id="order-detail-category" data-field="category"></dd>
+                <dt>Подкатегория</dt><dd id="order-detail-subcategory" data-field="subcategory"></dd>
+                <dt>Описание</dt><dd id="order-detail-description" data-field="description"></dd>
+                <dt>Имя клиента</dt><dd id="order-detail-name" data-field="name"></dd>
+                <dt>Телефон</dt><dd id="order-detail-phone" data-field="phone"></dd>
+                <dt>Адрес</dt><dd id="order-detail-address" data-field="address"></dd>
+                <dt>Дата</dt><dd id="order-detail-date" data-field="date"></dd>
+                <dt>Время</dt><dd id="order-detail-time" data-field="time"></dd>
+                <dt>Оплата</dt><dd id="order-detail-payment" data-field="payment"></dd>
+                <dt>Стоимость</dt><dd id="order-detail-cost" data-field="cost"></dd>
+            </dl>
+        </div>
+        <h3 id="order-detail-media-title" class="hidden">Медиа</h3>
+        <div class="media-gallery-container">
+            <div id="order-detail-media-gallery"></div>
+        </div>
+        <button id="add-media-btn" class="button-primary hidden">Добавить фото/видео</button>
+        <h3 id="order-detail-executors-title" class="hidden">Исполнители</h3>
+        <ul id="order-detail-executors-list" class="content-list"></ul>
+        <div class="order-detail-actions"></div>
+    </div>
+
+    <div id="driver-panel" class="panel">
+        <h2>Панель водителя</h2>
+        <p>Управление отчетами по выполненным заказам.</p>
+        <button id="start-report-btn">Начать расчет по заказам</button>
+        <div id="driver-action-result"></div>
+    </div>
+
+    <div id="user-panel" class="panel">
+        <header class="panel-header">
+            <h2>Мои заказы</h2>
+        </header>
+        <div class="empty-state hidden" id="user-orders-empty-state">
+            <div class="empty-state-icon" id="user-orders-empty-icon"></div>
+            <h3 class="empty-state-title">У вас еще нет заказов</h3>
+            <p class="empty-state-message">Нажмите кнопку ниже, чтобы создать первый заказ.</p>
+            <button id="create-order-from-empty-state" class="button-primary">Создать заказ</button>
+        </div>
+        <ul id="user-orders-list" class="content-list"></ul>
+    </div>
+
+    <div id="user-order-creation-panel" class="panel">
+        <header class="panel-header">
+            <button class="back-button" data-target-panel="user-panel">‹</button>
+            <h2>Создать новый заказ</h2>
+        </header>
+        <div class="form-content-wrapper">
+            <form id="user-create-order-form">
+                <fieldset>
+                    <legend>Ваши данные</legend>
+                    <div class="form-group">
+                        <input type="text" id="user-order-name" name="name" required placeholder=" ">
+                        <label for="user-order-name">Имя</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" id="user-order-phone" name="phone" placeholder=" " required>
+                        <label for="user-order-phone">Телефон</label>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Детали услуги</legend>
+                    <div class="form-group-inline">
+                        <div class="form-group">
+                            <select id="user-category-select" name="category" required>
+                                <option value="" disabled selected></option>
+                                <option value="waste_removal">Вывоз мусора</option>
+                                <option value="demolition">Демонтаж</option>
+                            </select>
+                            <label for="user-category-select">Категория</label>
+                        </div>
+                        <div class="form-group">
+                            <select id="user-subcategory-select" name="subcategory" required>
+                                <option value="" disabled selected></option>
+                            </select>
+                            <label for="user-subcategory-select">Подкатегория</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="user-order-address" name="address" required placeholder=" ">
+                        <label for="user-order-address">Адрес</label>
+                    </div>
+                    <div class="form-group-inline">
+                        <div class="form-group">
+                            <input type="date" id="user-order-date" name="date" required placeholder=" ">
+                            <label for="user-order-date">Дата</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="time" id="user-order-time" name="time" required placeholder=" ">
+                            <label for="user-order-time">Время</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="user-order-description" name="description" rows="3" placeholder=" "></textarea>
+                        <label for="user-order-description">Описание</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="static-label">Фото/Видео (для оценки стоимости)</label>
+                        <div id="user-media-swiper" class="swiper-container media-preview-swiper">
+                            <div class="swiper-wrapper"></div>
+                            <div class="swiper-pagination"></div>
+                        </div>
+                        <div class="media-buttons-container" data-form-type="user">
+                            <button type="button" class="button-secondary-media take-photo">
+                                <i class="fa-solid fa-camera"></i> Сделать фото
+                            </button>
+                            <button type="button" class="button-secondary-media choose-gallery">
+                                <i class="fa-solid fa-images"></i> Из галереи
+                            </button>
+                        </div>
+                    </div>
+                </fieldset>
+                <div class="form-actions">
+                    <button type="submit" class="button-primary">Отправить заявку</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="contact-operator-panel" class="panel">
+        <header class="panel-header">
+            <button class="back-button" data-target-panel="user-panel">‹</button>
+            <h2>Связь с оператором</h2>
+        </header>
+        <div class="empty-state" style="padding-top: 50px;">
+            <div class="empty-state-icon lottie-container" id="contact-operator-lottie"></div>
+            <h3 class="empty-state-title">Возникли вопросы?</h3>
+            <p class="empty-state-message">Напишите нашему оператору или позвоните по телефону. Мы с радостью поможем вам!</p>
+            <div class="contact-buttons-container">
+                <button id="open-operator-chat-btn" class="button-primary"><i class="fa-solid fa-comments"></i> Написать оператору</button>
+                <a href="tel:+79789900230" id="call-operator-btn" class="button-primary button-success"><i class="fa-solid fa-phone"></i> Позвонить</a>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<div id="bottom-ribbon-menu" class="bottom-ribbon hidden"></div>
+
+<div id="fullscreen-media-overlay" class="fullscreen-media-overlay hidden">
+    <button id="close-fullscreen-media" class="close-button">✕</button>
+    <div class="swiper-container" id="fullscreen-swiper">
+        <div class="swiper-wrapper" id="fullscreen-swiper-wrapper">
+        </div>
+        <div class="swiper-pagination fullscreen-pagination"></div>
+    </div>
+</div>
+
+<template id="order-card-template">
+    <li class="card order-card" tabindex="0">
+        <div class="card-header">
+            <div class="order-type-anim"></div>
+            <span class="order-id"></span>
+            <span class="order-status-badge"></span>
+        </div>
+        <div class="card-body">
+            <div class="info-item"><i class="icon-placeholder"></i><span class="order-client"></span></div>
+            <div class="info-item"><i class="icon-placeholder"></i><span class="order-address"></span></div>
+        </div>
+        <div class="card-footer">
+            <div class="info-item"><i class="icon-placeholder"></i><span class="order-date"></span></div>
+            <div class="info-item"><i class="icon-placeholder"></i><span class="order-cost"></span></div>
+        </div>
+    </li>
+</template>
+<template id="client-card-template">
+    <li class="card client-card" tabindex="0">
+        <div class="card-body">
+            <div class="info-item">
+                <i class="icon-placeholder fa-solid fa-user"></i>
+                <div>
+                    <strong class="client-name"></strong>
+                    <small class="client-info"></small>
+                </div>
+            </div>
+    </li>
+</template>
+<template id="staff-card-template">
+    <li class="card staff-card" tabindex="0">
+        <div class="card-body">
+            <div class="info-item">
+                <i class="icon-placeholder fa-solid fa-user"></i>
+                <div>
+                    <strong class="staff-name"></strong>
+                    <small class="staff-phone"></small>
+                </div>
+            </div>
+            <i class="fa-solid fa-chevron-left swipe-indicator"></i>
+        </div>
+    </li>
+</template>
+<template id="executor-card-template">
+    <li class="card executor-card">
+        <div class="card-body">
+            <div class="info-item">
+                <i class="icon-placeholder"></i>
+                <div>
+                    <strong class="executor-name"></strong>
+                    <small class="executor-role"></small>
+                </div>
+            </div>
+            <div class="info-item executor-status-item">
+                <i class="icon-placeholder"></i>
+                <span class="executor-status"></span>
+            </div>
+        </div>
+    </li>
+</template>
+<template id="media-item-template">
+    <div class="swiper-slide" style="width: 100px; height: 100px;">
+        <div class="media-item">
+            <img class="media-thumbnail" src="" alt="Предпросмотр медиа" style="display: none;">
+
+            <video class="media-thumbnail" playsinline muted loop style="display: none;"></video>
+
+            <i class="media-type-icon"></i>
+
+        </div>
+    </div>
+</template>
+<template id="skeleton-card-template">
+    <li class="card skeleton"></li>
+</template>
+<template id="empty-state-template">
+    <div class="empty-state">
+        <div class="empty-state-icon lottie-container"></div>
+        <h3 class="empty-state-title"></h3>
+        <p class="empty-state-message"></p>
+    </div>
+</template>
+
+<script src="app.js?v=2.1"></script>
+<script>
+    // Регистрация Service Worker для поддержки PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(registration => {
+                    console.log('Service Worker зарегистрирован:', registration);
+                })
+                .catch(error => {
+                    console.error('Ошибка регистрации Service Worker:', error);
+                });
+        });
+    }
+</script>
+<template id="fullscreen-slide-template">
+    <div class="swiper-slide">
+        <div class="swiper-zoom-container">
+            <img src="" alt="Полноэкранное изображение" style="display: none;">
+            <video src="" controls playsinline preload="metadata" style="display: none; max-width: 100%; max-height: 100%;"></video>
+        </div>
+    </div>
+</template>
+
+</body>
+</html>

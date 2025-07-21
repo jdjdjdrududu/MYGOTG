@@ -1,0 +1,20 @@
+# Запрещаем прямой доступ к директории media_storage
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Запрещаем прямой доступ к директории media_storage
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^media_storage/ - [F,L]
+</IfModule>
+
+# Запрещаем листинг директорий
+Options -Indexes
+
+# Запрещаем доступ к файлам .htaccess и .htpasswd
+<FilesMatch "^\.ht">
+    Order allow,deny
+    Deny from all
+</FilesMatch> 
