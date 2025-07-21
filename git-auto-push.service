@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=gobotuser
+User=root
 WorkingDirectory=/home/gobotuser/go/src/mygotelegrambot
 ExecStart=/home/gobotuser/go/src/mygotelegrambot/watch_and_push.sh
 Restart=always

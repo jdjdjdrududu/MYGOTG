@@ -3,20 +3,13 @@
 # Change to the project directory
 cd /home/gobotuser/go/src/mygotelegrambot || { echo "Failed to change directory"; exit 1; }
 
-# Pull latest changes first to avoid non-fast-forward errors
-echo "Pulling latest changes from GitHub..."
-git pull --rebase origin main || {
-  echo "Failed to pull changes. There might be conflicts."
-  echo "Continuing with local changes..."
-}
-
 # Check if there are any changes to commit
 if [[ -z $(git status --porcelain) ]]; then
   echo "No changes to commit"
   exit 0
 fi
 
-# Add all changes
+# Add all changes first
 echo "Adding changes to git..."
 git add .
 
@@ -26,6 +19,14 @@ echo "Committing: $message"
 if ! git commit -m "$message"; then
   echo "Failed to commit changes"
   exit 1
+fi
+
+# Pull latest changes with rebase to avoid merge commits
+echo "Pulling latest changes from GitHub..."
+if ! git pull --rebase origin main; then
+  echo "Failed to pull with rebase. Trying to resolve conflicts..."
+  # If rebase fails, try to abort it and continue with force push
+  git rebase --abort
 fi
 
 # Push to GitHub with force if needed
