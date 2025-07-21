@@ -1,7 +1,7 @@
 module Original
 
 go 1.24.2
-
++
 require (
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-chi/cors v1.2.2
@@ -25,3 +25,4 @@ require (
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
 )
+// sadfasdfasdgsdfg			asdfasdfasdf

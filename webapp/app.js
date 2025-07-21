@@ -565,13 +565,40 @@ const App = {
             App.state.currentPanel = panelId;
         },
         showLoader(show = true) { document.getElementById('top-progress-bar')?.classList.toggle('hidden', !show); },
-        showError(message) {
+        showError(message, duration = 5000) {
             const errorDiv = document.getElementById('error-message');
-            if (errorDiv) {
-                errorDiv.textContent = message;
-                errorDiv.classList.remove('hidden');
-                setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+            if (!errorDiv) return;
+            
+            // Останавливаем предыдущий таймер, если он есть
+            if (App.state.errorTimerId) {
+                clearTimeout(App.state.errorTimerId);
             }
+            
+            // Добавляем иконку для лучшей видимости
+            errorDiv.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> ${message}`;
+            errorDiv.classList.remove('hidden');
+            
+            // Добавляем анимацию появления
+            errorDiv.style.animation = 'none';
+            errorDiv.offsetHeight; // Trigger reflow
+            errorDiv.style.animation = 'fadeInDown 0.3s forwards';
+            
+            // Устанавливаем таймер для скрытия сообщения
+            App.state.errorTimerId = setTimeout(() => {
+                errorDiv.style.animation = 'fadeOutUp 0.3s forwards';
+                setTimeout(() => {
+                    errorDiv.classList.add('hidden');
+                }, 300);
+            }, duration);
+            
+            // Добавляем возможность закрыть сообщение по клику
+            errorDiv.onclick = () => {
+                clearTimeout(App.state.errorTimerId);
+                errorDiv.style.animation = 'fadeOutUp 0.3s forwards';
+                setTimeout(() => {
+                    errorDiv.classList.add('hidden');
+                }, 300);
+            };
         },
 
         renderSkeleton(containerId, count = 5) {
