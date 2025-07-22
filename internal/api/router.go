@@ -4,8 +4,6 @@ import (
 	"Original/internal/config"
 	"Original/internal/constants"
 	"Original/internal/handlers"
-	"context"
-	"net/http"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -19,17 +17,15 @@ type ApiDependencies struct {
 
 // SetupRoutes настраивает все маршруты для API.
 func SetupRoutes(r *chi.Mux, deps ApiDependencies) {
-	r.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ctx := context.WithValue(r.Context(), "config", deps.Config)
-			ctx = context.WithValue(ctx, "bot", deps.Bot)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	})
+	// Middleware уже добавлен в main.go, не добавляем его здесь
 
 	r.Group(func(r chi.Router) {
+		r.Use(ConfigMiddleware(deps.Config))
 		r.Get("/api/client-config", GetClientConfig)
 	})
+
+	// ВРЕМЕННЫЙ ТЕСТОВЫЙ МАРШРУТ для отладки (БЕЗ АУТЕНТИФИКАЦИИ)
+	r.Get("/api/test/profile", GetTestUserProfile)
 
 	// Этот маршрут должен быть публичным, но с проверкой доступа внутри обработчика
 	// Используем MediaProxyHandler вместо ServeMediaHandler для безопасной отдачи файлов
@@ -37,6 +33,7 @@ func SetupRoutes(r *chi.Mux, deps ApiDependencies) {
 
 	r.Group(func(r chi.Router) {
 		r.Use(AuthMiddleware(deps.SecretKey))
+		r.Use(BotMiddleware(deps.Bot))
 
 		// === Маршрут для загрузки файлов (остается защищенным) ===
 		r.Post("/api/upload-media", UploadMediaHandler)

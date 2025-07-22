@@ -3,505 +3,1833 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="Вывоз мусора, демонтаж и другие услуги в Крыму">
-    <meta name="theme-color" content="#007aff">
-    <title>Сервис-Крым Web App</title>
+    <meta name="description" content="Сервис-Крым - современное приложение для управления заказами">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>Сервис-Крым</title>
+    
     <!-- PWA Support -->
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    <!-- External Libraries -->
+    
+    <!-- Telegram WebApp -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css"/>
-    <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js" defer></script>
-    <link rel="stylesheet" href="style.css?v=1.1">
+    
+    <style>
+        /* CSS Variables for Theming */
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3a3a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #999999;
+            --accent-primary: #007aff;
+            --accent-secondary: #5ac8fa;
+            --success: #34c759;
+            --warning: #ff9500;
+            --error: #ff3b30;
+            --border-color: #444444;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid #3a3a3a;
+            border-top: 3px solid #FF8C00;
+            border-right: 3px solid #D2691E;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .loading-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Main App Container */
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .app.loaded {
+            opacity: 1;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        /* Navigation */
+        .nav {
+            display: flex;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-item {
+            flex-shrink: 0;
+            padding: 15px 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .nav-item.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        /* Panel System */
+        .panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-new { background: var(--warning); color: #000; }
+        .status-inprogress { background: var(--accent-primary); color: #fff; }
+        .status-completed { background: var(--success); color: #fff; }
+        .status-canceled { background: var(--error); color: #fff; }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: #4a4a4a;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        /* Grid System */
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: var(--radius);
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Notifications */
+        .notifications {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+        }
+
+        .notification {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 15px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 10px;
+            border-left: 4px solid var(--accent-primary);
+            box-shadow: var(--shadow);
+            max-width: 300px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success { border-left-color: var(--success); }
+        .notification.error { border-left-color: var(--error); }
+        .notification.warning { border-left-color: var(--warning); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 10px 15px;
+            }
+            
+            .main {
+                padding: 15px;
+            }
+            
+            .modal-content {
+                margin: 0;
+                border-radius: 0;
+                max-height: 100vh;
+                height: 100vh;
+            }
+            
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-10 { gap: 10px; }
+        .service-crimea-animated {
+            font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            color: #D2691E;
+            background: linear-gradient(135deg, 
+                #FF8C00 0%, 
+                #D2691E 50%, 
+                #CD853F 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            display: inline-block;
+            position: relative;
+            transform: translateX(-120vw) rotate(-25deg) scale(0.2);
+            opacity: 0;
+            animation: serviceEntranceAnimation 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
+            filter: drop-shadow(0 2px 8px rgba(210, 105, 30, 0.3));
+            /* 4K Quality enhancements */
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+            will-change: transform, opacity, filter;
+        }
+
+        .service-crimea-animated.loaded {
+            transform: translateX(0) rotate(0deg) scale(1);
+            opacity: 1;
+            background: linear-gradient(135deg, 
+                #FF8C00 0%, 
+                #D2691E 30%, 
+                #CD853F 60%,
+                #DAA520 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+            animation: none;
+            filter: drop-shadow(0 2px 8px rgba(210, 105, 30, 0.4));
+            letter-spacing: 0.08em;
+            /* Final quality state */
+            will-change: auto;
+            backface-visibility: visible;
+        }
+
+        .service-subtitle {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            color: #8B7355;
+            text-align: center;
+            margin-top: -2px;
+            position: relative;
+            cursor: default;
+            transition: all 0.3s ease;
+            /* Quality enhancements */
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .service-subtitle span {
+            opacity: 0;
+            transform: translateY(10px) scale(0.8);
+            animation: letterAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            display: inline-block;
+        }
+
+        .service-subtitle span.separator {
+            color: #A0522D;
+            font-weight: 600;
+        }
+
+        .service-subtitle span.space {
+            width: 0.3em;
+        }
+
+        @keyframes letterAppear {
+            0% {
+                opacity: 0;
+                transform: translateY(10px) scale(0.8);
+            }
+            50% {
+                opacity: 0.7;
+                transform: translateY(-2px) scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Задержки для каждой буквы */
+        .service-subtitle span:nth-child(1) { animation-delay: 3.2s; }  /* Д */
+        .service-subtitle span:nth-child(2) { animation-delay: 3.35s; } /* Е */
+        .service-subtitle span:nth-child(3) { animation-delay: 3.5s; }  /* М */
+        .service-subtitle span:nth-child(4) { animation-delay: 3.65s; } /* О */
+        .service-subtitle span:nth-child(5) { animation-delay: 3.8s; }  /* Н */
+        .service-subtitle span:nth-child(6) { animation-delay: 3.95s; } /* Т */
+        .service-subtitle span:nth-child(7) { animation-delay: 4.1s; }  /* А */
+        .service-subtitle span:nth-child(8) { animation-delay: 4.25s; } /* Ж */
+        .service-subtitle span:nth-child(9) { animation-delay: 4.5s; }  /* пробел */
+        .service-subtitle span:nth-child(10) { animation-delay: 4.7s; } /* | */
+        .service-subtitle span:nth-child(11) { animation-delay: 4.9s; } /* пробел */
+        .service-subtitle span:nth-child(12) { animation-delay: 5.1s; } /* В */
+        .service-subtitle span:nth-child(13) { animation-delay: 5.25s; }/* Ы */
+        .service-subtitle span:nth-child(14) { animation-delay: 5.4s; } /* В */
+        .service-subtitle span:nth-child(15) { animation-delay: 5.55s; }/* О */
+        .service-subtitle span:nth-child(16) { animation-delay: 5.7s; } /* З */
+        .service-subtitle span:nth-child(17) { animation-delay: 5.9s; } /* пробел */
+        .service-subtitle span:nth-child(18) { animation-delay: 6.1s; } /* М */
+        .service-subtitle span:nth-child(19) { animation-delay: 6.25s; }/* У */
+        .service-subtitle span:nth-child(20) { animation-delay: 6.4s; } /* С */
+        .service-subtitle span:nth-child(21) { animation-delay: 6.55s; }/* О */
+        .service-subtitle span:nth-child(22) { animation-delay: 6.7s; } /* Р */
+        .service-subtitle span:nth-child(23) { animation-delay: 6.85s; }/* А */
+
+        .service-subtitle.loaded span {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            animation: none;
+        }
+
+        .service-subtitle:hover {
+            transform: translateY(-1px);
+            filter: drop-shadow(0 1px 4px rgba(139, 115, 85, 0.3));
+            transition: all 0.3s ease;
+        }
+
+        .service-subtitle:hover span:not(.separator) {
+            color: #A0522D;
+            transition: color 0.3s ease;
+        }
+
+        .service-subtitle:hover span.separator {
+            color: #D2691E;
+            transform: scale(1.1);
+            transition: all 0.3s ease;
+        }
+
+        @keyframes serviceEntranceAnimation {
+            0% {
+                transform: translateX(-120vw) rotate(-25deg) scale(0.2);
+                opacity: 0;
+                filter: drop-shadow(0 0 0 rgba(210, 105, 30, 0)) blur(8px) brightness(0.5);
+                letter-spacing: -0.1em;
+            }
+            15% {
+                transform: translateX(-20vw) rotate(-8deg) scale(0.6);
+                opacity: 0.3;
+                filter: drop-shadow(0 4px 20px rgba(255, 140, 0, 0.6)) blur(6px) brightness(0.8);
+                letter-spacing: 0.02em;
+            }
+            35% {
+                transform: translateX(60px) rotate(8deg) scale(1.15);
+                opacity: 0.8;
+                filter: drop-shadow(0 6px 24px rgba(255, 140, 0, 0.8)) blur(3px) brightness(1.1);
+                letter-spacing: 0.06em;
+            }
+            55% {
+                transform: translateX(-30px) rotate(-4deg) scale(0.92);
+                opacity: 0.95;
+                filter: drop-shadow(0 4px 16px rgba(210, 105, 30, 0.6)) blur(2px) brightness(1.05);
+                letter-spacing: 0.08em;
+            }
+            72% {
+                transform: translateX(15px) rotate(2deg) scale(1.04);
+                opacity: 1;
+                filter: drop-shadow(0 3px 12px rgba(210, 105, 30, 0.5)) blur(1px) brightness(1.02);
+                letter-spacing: 0.08em;
+            }
+            88% {
+                transform: translateX(-5px) rotate(-1deg) scale(0.98);
+                opacity: 1;
+                filter: drop-shadow(0 2px 10px rgba(210, 105, 30, 0.4)) blur(0.5px) brightness(1.01);
+                letter-spacing: 0.08em;
+            }
+            100% {
+                transform: translateX(0) rotate(0deg) scale(1);
+                opacity: 1;
+                filter: drop-shadow(0 2px 8px rgba(210, 105, 30, 0.4)) brightness(1);
+                letter-spacing: 0.08em;
+            }
+        }
+    </style>
 </head>
 <body>
-<div id="top-progress-bar" class="hidden"></div>
-<div id="app-container">
-    <div id="error-message" class="error-container hidden"></div>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" style="color: #D2691E; font-weight: 600;">Загрузка <span style="color: #FF8C00;">Сервис-Крым</span>...</div>
+        <div class="loading-subtitle" id="loading-subtitle">Инициализация приложения</div>
+    </div>
 
-    <div id="orders-panel" class="panel visible">
-        <header class="panel-header">
-            <h2>Заказы</h2>
-        </header>
+    <!-- Notifications Container -->
+    <div id="notifications" class="notifications"></div>
 
-        <div class="status-tabs-container">
-            <div class="swiper-container" id="status-tabs-swiper">
-                <div class="swiper-wrapper" id="status-tabs-wrapper">
+    <!-- Main App -->
+    <div id="app" class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="service-crimea-animated">СЕРВИС-КРЫМ</span>
+                    <div class="service-subtitle">
+                        <span>Д</span><span>Е</span><span>М</span><span>О</span><span>Н</span><span>Т</span><span>А</span><span>Ж</span><span class="space"> </span><span class="separator">|</span><span class="space"> </span><span>В</span><span>Ы</span><span>В</span><span>О</span><span>З</span><span class="space"> </span><span>М</span><span>У</span><span>С</span><span>О</span><span>Р</span><span>А</span>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">?</div>
+                    <div>
+                        <div class="user-name" id="user-name">Загрузка...</div>
+                        <div class="user-role" id="user-role">—</div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="search-container">
-            <div class="search-input-wrapper">
-                <div id="lottie-search-icon-orders" class="lottie-search-icon"></div>
-                <input type="search" id="orders-search-input" placeholder="Поиск по ID, имени, адресу...">
-            </div>
-        </div>
-
-        <div class="swiper-container" id="orders-content-swiper">
-            <div class="swiper-wrapper" id="orders-content-wrapper">
-            </div>
-        </div>
-    </div>
-
-    <button id="fab-create-order" class="fab-create-order" title="Создать заказ">
-        <span id="fab-plus-lottie"></span>
-    </button>
-    <button id="fab-create-staff" class="fab-create-order hidden" title="Добавить сотрудника">
-        <span id="fab-plus-staff-lottie"></span>
-    </button>
-
-    <div id="add-staff-modal-overlay" class="modal-overlay hidden">
-        <div id="add-staff-modal-window" class="modal-window">
-            <button id="close-staff-modal" class="close-modal-btn">&times;</button>
-            <h2 id="add-staff-modal-title">Добавить сотрудника</h2>
-            <div class="modal-form-container">
-                <form id="add-staff-form">
-                    <fieldset>
-                        <legend>Личные данные</legend>
-                        <div class="form-group">
-                            <input type="text" id="staff-first-name" name="FirstName" required placeholder="Имя">
-                            <label for="staff-first-name">Имя</label>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" id="staff-last-name" name="LastName" required placeholder="Фамилия">
-                            <label for="staff-last-name">Фамилия</label>
-                        </div>
-                        <div class="form-group">
-                            <input type="tel" id="staff-phone" name="Phone" placeholder="+79780000000" required>
-                            <label for="staff-phone">Телефон</label>
-                        </div>
-                        <div class="form-group">
-                            <input type="text" id="staff-card-number" name="CardNumber" placeholder="Для выплат (необязательно)">
-                            <label for="staff-card-number">Номер карты</label>
-                        </div>
-                    </fieldset>
-                    <div class="form-actions">
-                        <button type="submit" class="button-primary">Добавить</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div id="order-creation-panel" class="panel">
-        <header class="panel-header">
-            <button class="back-button" data-target-panel="orders-panel">‹</button>
-            <h2>Создание заказа</h2>
         </header>
-        <div class="form-content-wrapper">
-            <form id="create-order-form">
-                <fieldset>
-                    <legend>Данные клиента</legend>
-                    <div class="form-group">
-                        <input type="text" id="order-name" name="name" placeholder=" " required>
-                        <label for="order-name">Имя для заказа</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="tel" id="order-phone" name="phone" placeholder=" " required>
-                        <label for="order-phone">Телефон</label>
-                    </div>
-                </fieldset>
 
-                <fieldset>
-                    <legend>Детали услуги</legend>
-                    <div class="form-group-inline">
-                        <div class="form-group">
-                            <select id="category-select" name="category" required>
-                                <option value="" disabled selected></option>
-                                <option value="waste_removal">Вывоз мусора</option>
-                                <option value="demolition">Демонтаж</option>
+        <!-- Navigation -->
+        <nav class="nav" id="nav">
+            <!-- Navigation items will be dynamically generated based on user role -->
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Dashboard Panel -->
+            <div id="dashboard-panel" class="panel active">
+                <div class="stats-grid" id="stats-grid">
+                    <!-- Stats cards will be dynamically generated -->
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Добро пожаловать!</h2>
+                    </div>
+                    <p>Выберите раздел в меню выше для работы с системой.</p>
+                </div>
+            </div>
+
+            <!-- Orders Panel -->
+            <div id="orders-panel" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Заказы</h2>
+                        <button id="create-order-btn" class="btn btn-primary">+ Создать заказ</button>
+                    </div>
+                    <div id="orders-filters" class="mb-20">
+                        <div class="flex gap-10" style="flex-wrap: wrap;">
+                            <select id="status-filter" class="form-control" style="max-width: 200px;">
+                                <option value="">Все статусы</option>
+                                <option value="new">Новые</option>
+                                <option value="awaiting_confirmation">Ожидают подтверждения</option>
+                                <option value="inprogress">В работе</option>
+                                <option value="completed">Выполненные</option>
+                                <option value="canceled">Отмененные</option>
                             </select>
-                            <label for="category-select">Категория</label>
-                        </div>
-                        <div class="form-group">
-                            <select id="subcategory-select" name="subcategory" required>
-                                <option value="" disabled selected></option>
-                            </select>
-                            <label for="subcategory-select">Подкатегория</label>
+                            <input type="text" id="search-input" class="form-control" placeholder="Поиск по клиенту, телефону..." style="max-width: 250px;">
+                            <button id="refresh-orders-btn" class="btn btn-secondary">🔄 Обновить</button>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <input type="text" id="order-address" name="address" placeholder=" " required>
-                        <label for="order-address">Адрес</label>
+                    <div id="orders-list">
+                        <!-- Orders will be dynamically loaded -->
                     </div>
-                    <div class="form-group-inline">
-                        <div class="form-group">
-                            <input type="date" id="order-date" name="date" placeholder=" " required>
-                            <label for="order-date">Дата</label>
-                        </div>
-                        <div class="form-group">
-                            <input type="time" id="order-time" name="time" placeholder=" " required>
-                            <label for="order-time">Время</label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <textarea id="order-description" name="description" rows="3" placeholder=" "></textarea>
-                        <label for="order-description">Описание</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="number" id="order-cost" name="cost" placeholder=" " min="0">
-                        <label for="order-cost">Стоимость (₽)</label>
-                    </div>
-                    <div class="form-group">
-                        <label class="static-label">Фото/Видео (для оценки стоимости)</label>
-                        <div id="operator-media-swiper" class="swiper-container media-preview-swiper">
-                            <div class="swiper-wrapper"></div>
-                            <div class="swiper-pagination"></div>
-                        </div>
-                        <div class="media-buttons-container" data-form-type="operator">
-                            <button type="button" class="button-secondary-media take-photo">
-                                <i class="fa-solid fa-camera"></i> Сделать фото
-                            </button>
-                            <button type="button" class="button-secondary-media choose-gallery">
-                                <i class="fa-solid fa-images"></i> Из галереи
-                            </button>
-                        </div>
-                    </div>
-                </fieldset>
-                <div class="form-actions">
-                    <button type="submit" class="button-primary">Создать заказ</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="clients-panel" class="panel">
-        <header class="panel-header">
-            <button class="back-button" data-target-panel="orders-panel">‹</button>
-            <h2>Клиенты</h2>
-        </header>
-        <div class="search-container">
-            <div class="search-input-wrapper">
-                <div id="lottie-search-icon-clients" class="lottie-search-icon"></div>
-                <input type="search" id="clients-search-input" placeholder="Поиск по имени, телефону, ID...">
-            </div>
-        </div>
-        <ul id="clients-list" class="content-list"></ul>
-    </div>
-
-    <div id="client-detail-panel" class="panel">
-        <header class="panel-header">
-            <button class="back-button" data-target-panel="clients-panel">‹</button>
-            <h2 id="client-detail-name">Детали клиента</h2>
-        </header>
-        <div id="client-details-content"></div>
-        <div class="client-actions">
-            <button class="button-primary" id="create-order-for-client-btn"><i class="fa-solid fa-plus"></i> Создать заказ</button>
-            <button class="button-primary" id="view-client-chats-btn"><i class="fa-solid fa-comments"></i> Посмотреть чаты</button>
-            <button class="button-primary button-danger" id="block-client-btn"><i class="fa-solid fa-user-lock"></i> Заблокировать</button>
-            <button class="button-primary button-success hidden" id="unblock-client-btn"><i class="fa-solid fa-user-check"></i> Разблокировать</button>
-        </div>
-        <h3>Последние заказы</h3>
-        <ul id="client-orders-list" class="content-list"></ul>
-    </div>
-
-    <div id="staff-hub-panel" class="panel">
-        <header class="panel-header">
-            <button class="back-button" data-target-panel="orders-panel">‹</button>
-            <h2>Штат</h2>
-        </header>
-        <div class="staff-categories">
-            <button class="role-category-btn" data-role="main_operator">
-                <i class="fa-solid fa-user-tie"></i>
-                <span>Главные операторы</span>
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-            <button class="role-category-btn" data-role="operator">
-                <i class="fa-solid fa-headset"></i>
-                <span>Операторы</span>
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-            <button class="role-category-btn" data-role="driver">
-                <i class="fa-solid fa-car"></i>
-                <span>Водители</span>
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-            <button class="role-category-btn" data-role="loader">
-                <i class="fa-solid fa-boxes-packing"></i>
-                <span>Грузчики</span>
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-        </div>
-    </div>
-
-    <div id="staff-list-panel" class="panel">
-        <header class="panel-header">
-            <button class="back-button" data-target-panel="staff-hub-panel">‹</button>
-            <h2 id="staff-list-title">Сотрудники</h2>
-        </header>
-        <ul id="staff-list" class="content-list"></ul>
-    </div>
-
-    <div id="order-detail-panel" class="panel">
-        <header class="panel-header">
-            <button class="back-button" data-target-panel="orders-panel">‹</button>
-            <h2 id="order-detail-title">Заказ №...</h2>
-            <span id="order-detail-status-badge" class="order-status-badge"></span>
-        </header>
-        <div class="lottie-order-anim" id="lottie-order-anim"></div>
-        <div id="order-details-content" class="details-grid">
-            <dl>
-                <dt>Категория</dt><dd id="order-detail-category" data-field="category"></dd>
-                <dt>Подкатегория</dt><dd id="order-detail-subcategory" data-field="subcategory"></dd>
-                <dt>Описание</dt><dd id="order-detail-description" data-field="description"></dd>
-                <dt>Имя клиента</dt><dd id="order-detail-name" data-field="name"></dd>
-                <dt>Телефон</dt><dd id="order-detail-phone" data-field="phone"></dd>
-                <dt>Адрес</dt><dd id="order-detail-address" data-field="address"></dd>
-                <dt>Дата</dt><dd id="order-detail-date" data-field="date"></dd>
-                <dt>Время</dt><dd id="order-detail-time" data-field="time"></dd>
-                <dt>Оплата</dt><dd id="order-detail-payment" data-field="payment"></dd>
-                <dt>Стоимость</dt><dd id="order-detail-cost" data-field="cost"></dd>
-            </dl>
-        </div>
-        <h3 id="order-detail-media-title" class="hidden">Медиа</h3>
-        <div class="media-gallery-container">
-            <div id="order-detail-media-gallery"></div>
-        </div>
-        <button id="add-media-btn" class="button-primary hidden">Добавить фото/видео</button>
-        <h3 id="order-detail-executors-title" class="hidden">Исполнители</h3>
-        <ul id="order-detail-executors-list" class="content-list"></ul>
-        <div class="order-detail-actions"></div>
-    </div>
-
-    <div id="driver-panel" class="panel">
-        <h2>Панель водителя</h2>
-        <p>Управление отчетами по выполненным заказам.</p>
-        <button id="start-report-btn">Начать расчет по заказам</button>
-        <div id="driver-action-result"></div>
-    </div>
-
-    <div id="user-panel" class="panel">
-        <header class="panel-header">
-            <h2>Мои заказы</h2>
-        </header>
-        <div class="empty-state hidden" id="user-orders-empty-state">
-            <div class="empty-state-icon" id="user-orders-empty-icon"></div>
-            <h3 class="empty-state-title">У вас еще нет заказов</h3>
-            <p class="empty-state-message">Нажмите кнопку ниже, чтобы создать первый заказ.</p>
-            <button id="create-order-from-empty-state" class="button-primary">Создать заказ</button>
-        </div>
-        <ul id="user-orders-list" class="content-list"></ul>
-    </div>
-
-    <div id="user-order-creation-panel" class="panel">
-        <header class="panel-header">
-            <button class="back-button" data-target-panel="user-panel">‹</button>
-            <h2>Создать новый заказ</h2>
-        </header>
-        <div class="form-content-wrapper">
-            <form id="user-create-order-form">
-                <fieldset>
-                    <legend>Ваши данные</legend>
-                    <div class="form-group">
-                        <input type="text" id="user-order-name" name="name" required placeholder=" ">
-                        <label for="user-order-name">Имя</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="tel" id="user-order-phone" name="phone" placeholder=" " required>
-                        <label for="user-order-phone">Телефон</label>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Детали услуги</legend>
-                    <div class="form-group-inline">
-                        <div class="form-group">
-                            <select id="user-category-select" name="category" required>
-                                <option value="" disabled selected></option>
-                                <option value="waste_removal">Вывоз мусора</option>
-                                <option value="demolition">Демонтаж</option>
-                            </select>
-                            <label for="user-category-select">Категория</label>
-                        </div>
-                        <div class="form-group">
-                            <select id="user-subcategory-select" name="subcategory" required>
-                                <option value="" disabled selected></option>
-                            </select>
-                            <label for="user-subcategory-select">Подкатегория</label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="user-order-address" name="address" required placeholder=" ">
-                        <label for="user-order-address">Адрес</label>
-                    </div>
-                    <div class="form-group-inline">
-                        <div class="form-group">
-                            <input type="date" id="user-order-date" name="date" required placeholder=" ">
-                            <label for="user-order-date">Дата</label>
-                        </div>
-                        <div class="form-group">
-                            <input type="time" id="user-order-time" name="time" required placeholder=" ">
-                            <label for="user-order-time">Время</label>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <textarea id="user-order-description" name="description" rows="3" placeholder=" "></textarea>
-                        <label for="user-order-description">Описание</label>
-                    </div>
-                    <div class="form-group">
-                        <label class="static-label">Фото/Видео (для оценки стоимости)</label>
-                        <div id="user-media-swiper" class="swiper-container media-preview-swiper">
-                            <div class="swiper-wrapper"></div>
-                            <div class="swiper-pagination"></div>
-                        </div>
-                        <div class="media-buttons-container" data-form-type="user">
-                            <button type="button" class="button-secondary-media take-photo">
-                                <i class="fa-solid fa-camera"></i> Сделать фото
-                            </button>
-                            <button type="button" class="button-secondary-media choose-gallery">
-                                <i class="fa-solid fa-images"></i> Из галереи
-                            </button>
-                        </div>
-                    </div>
-                </fieldset>
-                <div class="form-actions">
-                    <button type="submit" class="button-primary">Отправить заявку</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="contact-operator-panel" class="panel">
-        <header class="panel-header">
-            <button class="back-button" data-target-panel="user-panel">‹</button>
-            <h2>Связь с оператором</h2>
-        </header>
-        <div class="empty-state" style="padding-top: 50px;">
-            <div class="empty-state-icon lottie-container" id="contact-operator-lottie"></div>
-            <h3 class="empty-state-title">Возникли вопросы?</h3>
-            <p class="empty-state-message">Напишите нашему оператору или позвоните по телефону. Мы с радостью поможем вам!</p>
-            <div class="contact-buttons-container">
-                <button id="open-operator-chat-btn" class="button-primary"><i class="fa-solid fa-comments"></i> Написать оператору</button>
-                <a href="tel:+79789900230" id="call-operator-btn" class="button-primary button-success"><i class="fa-solid fa-phone"></i> Позвонить</a>
-            </div>
-        </div>
-    </div>
-
-
-</div>
-
-<div id="bottom-ribbon-menu" class="bottom-ribbon hidden"></div>
-
-<div id="fullscreen-media-overlay" class="fullscreen-media-overlay hidden">
-    <button id="close-fullscreen-media" class="close-button">✕</button>
-    <div class="swiper-container" id="fullscreen-swiper">
-        <div class="swiper-wrapper" id="fullscreen-swiper-wrapper">
-        </div>
-        <div class="swiper-pagination fullscreen-pagination"></div>
-    </div>
-</div>
-
-<template id="order-card-template">
-    <li class="card order-card" tabindex="0">
-        <div class="card-header">
-            <div class="order-type-anim"></div>
-            <span class="order-id"></span>
-            <span class="order-status-badge"></span>
-        </div>
-        <div class="card-body">
-            <div class="info-item"><i class="icon-placeholder"></i><span class="order-client"></span></div>
-            <div class="info-item"><i class="icon-placeholder"></i><span class="order-address"></span></div>
-        </div>
-        <div class="card-footer">
-            <div class="info-item"><i class="icon-placeholder"></i><span class="order-date"></span></div>
-            <div class="info-item"><i class="icon-placeholder"></i><span class="order-cost"></span></div>
-        </div>
-    </li>
-</template>
-<template id="client-card-template">
-    <li class="card client-card" tabindex="0">
-        <div class="card-body">
-            <div class="info-item">
-                <i class="icon-placeholder fa-solid fa-user"></i>
-                <div>
-                    <strong class="client-name"></strong>
-                    <small class="client-info"></small>
                 </div>
             </div>
-    </li>
-</template>
-<template id="staff-card-template">
-    <li class="card staff-card" tabindex="0">
-        <div class="card-body">
-            <div class="info-item">
-                <i class="icon-placeholder fa-solid fa-user"></i>
-                <div>
-                    <strong class="staff-name"></strong>
-                    <small class="staff-phone"></small>
+
+            <!-- Clients Panel -->
+            <div id="clients-panel" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Клиенты</h2>
+                    </div>
+                    <div id="clients-list">
+                        <!-- Clients will be dynamically loaded -->
+                    </div>
                 </div>
             </div>
-            <i class="fa-solid fa-chevron-left swipe-indicator"></i>
-        </div>
-    </li>
-</template>
-<template id="executor-card-template">
-    <li class="card executor-card">
-        <div class="card-body">
-            <div class="info-item">
-                <i class="icon-placeholder"></i>
-                <div>
-                    <strong class="executor-name"></strong>
-                    <small class="executor-role"></small>
+
+            <!-- Profile Panel -->
+            <div id="profile-panel" class="panel">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Мой профиль</h2>
+                    </div>
+                    <div id="profile-content">
+                        <!-- Profile content will be loaded here -->
+                    </div>
                 </div>
             </div>
-            <div class="info-item executor-status-item">
-                <i class="icon-placeholder"></i>
-                <span class="executor-status"></span>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="order-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="order-modal-title">Создать заказ</h3>
+                <button class="modal-close" onclick="closeModal('order-modal')">&times;</button>
+            </div>
+            <div id="order-modal-content">
+                <!-- Order form will be generated here -->
             </div>
         </div>
-    </li>
-</template>
-<template id="media-item-template">
-    <div class="swiper-slide" style="width: 100px; height: 100px;">
-        <div class="media-item">
-            <img class="media-thumbnail" src="" alt="Предпросмотр медиа" style="display: none;">
+    </div>
 
-            <video class="media-thumbnail" playsinline muted loop style="display: none;"></video>
-
-            <i class="media-type-icon"></i>
-
+    <!-- Order Details Modal -->
+    <div id="order-details-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="order-details-title">Детали заказа</h3>
+                <button class="modal-close" onclick="closeModal('order-details-modal')">&times;</button>
+            </div>
+            <div id="order-details-content">
+                <!-- Order details will be generated here -->
+            </div>
         </div>
     </div>
-</template>
-<template id="skeleton-card-template">
-    <li class="card skeleton"></li>
-</template>
-<template id="empty-state-template">
-    <div class="empty-state">
-        <div class="empty-state-icon lottie-container"></div>
-        <h3 class="empty-state-title"></h3>
-        <p class="empty-state-message"></p>
-    </div>
-</template>
 
-<script src="app.js?v=2.1"></script>
-<script>
-    // Регистрация Service Worker для поддержки PWA
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./service-worker.js')
-                .then(registration => {
-                    console.log('Service Worker зарегистрирован:', registration);
-                })
-                .catch(error => {
-                    console.error('Ошибка регистрации Service Worker:', error);
+    <!-- Media Upload Modal -->
+    <div id="media-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Загрузить файлы</h3>
+                <button class="modal-close" onclick="closeModal('media-modal')">&times;</button>
+            </div>
+            <div id="media-modal-content">
+                <div class="form-group">
+                    <label class="form-label">Выберите файлы</label>
+                    <input type="file" id="media-input" class="form-control" multiple accept="image/*,video/*">
+                </div>
+                <div id="media-preview" class="mb-20">
+                    <!-- File preview will be shown here -->
+                </div>
+                <div class="flex gap-10">
+                    <button id="upload-media-btn" class="btn btn-primary">Загрузить</button>
+                    <button onclick="closeModal('media-modal')" class="btn btn-secondary">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="confirm-title">Подтверждение</h3>
+                <button class="modal-close" onclick="closeModal('confirm-modal')">&times;</button>
+            </div>
+            <div id="confirm-content">
+                <p id="confirm-message">Вы уверены?</p>
+                <div class="flex gap-10 mt-20">
+                    <button id="confirm-yes-btn" class="btn btn-primary">Да</button>
+                    <button onclick="closeModal('confirm-modal')" class="btn btn-secondary">Нет</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Script -->
+    <script>
+        // Global App Configuration [[memory:3922676]]
+        window.APP_CONFIG = {
+            API_BASE: window.location.origin,
+            VERSION: '3.0',
+            DEBUG: window.location.hostname === 'localhost',
+            REFRESH_INTERVAL: 30000, // 30 seconds
+            NOTIFICATION_TIMEOUT: 5000 // 5 seconds
+        };
+
+        // Environment variables from .env
+        if (window.location.hostname !== 'localhost') {
+            // Production configuration will be loaded from server
+        }
+    </script>
+
+    <!-- Main Application Script -->
+    <script>
+        class ServiceApp {
+            constructor() {
+                this.user = null;
+                this.currentPanel = 'dashboard';
+                this.refreshInterval = null;
+                this.apiCache = new Map();
+                
+                // Bind methods
+                this.init = this.init.bind(this);
+                this.loadUser = this.loadUser.bind(this);
+                this.setupNavigation = this.setupNavigation.bind(this);
+                this.showPanel = this.showPanel.bind(this);
+            }
+
+            async init() {
+                try {
+                    this.updateLoadingText('Подключение к Telegram...');
+                    await this.initTelegram();
+                    
+                    this.updateLoadingText('Загрузка профиля пользователя...');
+                    await this.loadUser();
+                    
+                    this.updateLoadingText('Настройка интерфейса...');
+                    this.setupUI();
+                    this.setupNavigation();
+                    
+                    this.updateLoadingText('Загрузка данных...');
+                    await this.loadDashboardData();
+                    
+                    this.updateLoadingText('Запуск приложения...');
+                    this.startApp();
+                    
+                } catch (error) {
+                    console.error('Ошибка инициализации:', error);
+                    this.showError('Ошибка запуска приложения: ' + error.message);
+                }
+            }
+
+            updateLoadingText(text) {
+                const subtitle = document.getElementById('loading-subtitle');
+                if (subtitle) subtitle.textContent = text;
+            }
+
+            async initTelegram() {
+                // Initialize Telegram WebApp
+                if (window.Telegram && window.Telegram.WebApp) {
+                    window.Telegram.WebApp.ready();
+                    window.Telegram.WebApp.expand();
+                    window.Telegram.WebApp.BackButton.hide();
+                    window.Telegram.WebApp.MainButton.hide();
+                    console.log('✅ Telegram WebApp initialized');
+                } else {
+                    console.warn('⚠️ Telegram WebApp not available, using fallback mode');
+                }
+            }
+
+            async loadUser() {
+                try {
+                    const response = await this.apiRequest('/api/user/profile');
+                    this.user = response.data || response;
+                    console.log('👤 User loaded:', this.user);
+                } catch (error) {
+                    // Fallback to test profile for development
+                    console.warn('⚠️ Trying test profile endpoint...');
+                    try {
+                        const response = await this.apiRequest('/api/test/profile');
+                        this.user = response.data || response;
+                        console.log('👤 Test user loaded:', this.user);
+                    } catch (testError) {
+                        throw new Error('Не удалось загрузить профиль пользователя');
+                    }
+                }
+            }
+
+            setupUI() {
+                // Update user info in header
+                const avatar = document.getElementById('user-avatar');
+                const name = document.getElementById('user-name');
+                const role = document.getElementById('user-role');
+                
+                if (this.user) {
+                    const initials = (this.user.FirstName?.[0] || '') + (this.user.LastName?.[0] || '');
+                    avatar.textContent = initials || this.user.Role?.[0]?.toUpperCase() || '?';
+                    name.textContent = `${this.user.FirstName || ''} ${this.user.LastName || ''}`.trim() || 'Пользователь';
+                    
+                    const roleNames = {
+                        'user': 'Клиент',
+                        'operator': 'Оператор', 
+                        'admin': 'Администратор',
+                        'owner': 'Владелец',
+                        'driver': 'Водитель'
+                    };
+                    role.textContent = roleNames[this.user.Role] || this.user.Role;
+                }
+            }
+
+            setupNavigation() {
+                const nav = document.getElementById('nav');
+                const navItems = this.getNavigationItems();
+                
+                nav.innerHTML = navItems.map(item => 
+                    `<div class="nav-item ${item.id === this.currentPanel ? 'active' : ''}" 
+                          onclick="app.showPanel('${item.id}')">${item.label}</div>`
+                ).join('');
+            }
+
+            getNavigationItems() {
+                const baseItems = [
+                    { id: 'dashboard', label: '📊 Главная' },
+                    { id: 'orders', label: '📋 Заказы' },
+                    { id: 'profile', label: '👤 Профиль' }
+                ];
+
+                if (this.user && ['operator', 'admin', 'owner'].includes(this.user.Role)) {
+                    baseItems.splice(2, 0, { id: 'clients', label: '👥 Клиенты' });
+                }
+
+                return baseItems;
+            }
+
+            showPanel(panelId) {
+                // Hide all panels
+                document.querySelectorAll('.panel').forEach(panel => {
+                    panel.classList.remove('active');
                 });
-        });
-    }
-</script>
-<template id="fullscreen-slide-template">
-    <div class="swiper-slide">
-        <div class="swiper-zoom-container">
-            <img src="" alt="Полноэкранное изображение" style="display: none;">
-            <video src="" controls playsinline preload="metadata" style="display: none; max-width: 100%; max-height: 100%;"></video>
-        </div>
-    </div>
-</template>
+                
+                // Show selected panel
+                const panel = document.getElementById(`${panelId}-panel`);
+                if (panel) {
+                    panel.classList.add('active');
+                    this.currentPanel = panelId;
+                    
+                    // Update navigation
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    event.target.classList.add('active');
+                    
+                    // Load panel data
+                    this.loadPanelData(panelId);
+                }
+            }
 
+            async loadPanelData(panelId) {
+                try {
+                    switch (panelId) {
+                        case 'orders':
+                            await this.loadOrders();
+                            break;
+                        case 'clients':
+                            await this.loadClients();
+                            break;
+                        case 'profile':
+                            this.loadProfile();
+                            break;
+                    }
+                } catch (error) {
+                    console.error(`Ошибка загрузки данных для панели ${panelId}:`, error);
+                    this.showError('Ошибка загрузки данных');
+                }
+            }
+
+            async loadDashboardData() {
+                try {
+                    // Load dashboard statistics
+                    const statsGrid = document.getElementById('stats-grid');
+                    const stats = await this.getStats();
+                    
+                    statsGrid.innerHTML = stats.map(stat => `
+                        <div class="stat-card">
+                            <div class="stat-number">${stat.value}</div>
+                            <div class="stat-label">${stat.label}</div>
+                        </div>
+                    `).join('');
+                } catch (error) {
+                    console.error('Ошибка загрузки статистики:', error);
+                }
+            }
+
+            async getStats() {
+                // Return different stats based on user role
+                if (this.user && ['operator', 'admin', 'owner'].includes(this.user.Role)) {
+                    try {
+                        const orders = await this.apiRequest('/api/admin/orders?status=active');
+                        const clients = await this.apiRequest('/api/admin/clients');
+                        
+                        return [
+                            { label: 'Активные заказы', value: orders?.data?.length || 0 },
+                            { label: 'Всего клиентов', value: clients?.data?.length || 0 },
+                            { label: 'Заказов сегодня', value: '—' },
+                            { label: 'Выручка', value: '—' }
+                        ];
+                    } catch (error) {
+                        console.error('Ошибка загрузки статистики админа:', error);
+                    }
+                } else {
+                    try {
+                        const orders = await this.apiRequest('/api/user/orders');
+                        return [
+                            { label: 'Мои заказы', value: orders?.data?.length || 0 },
+                            { label: 'Активные', value: orders?.data?.filter(o => o.Status === 'inprogress')?.length || 0 },
+                            { label: 'Выполнено', value: orders?.data?.filter(o => o.Status === 'completed')?.length || 0 }
+                        ];
+                    } catch (error) {
+                        console.error('Ошибка загрузки статистики пользователя:', error);
+                    }
+                }
+                
+                return [
+                    { label: 'Заказы', value: '—' },
+                    { label: 'Статистика', value: '—' }
+                ];
+            }
+
+            async loadOrders() {
+                try {
+                    // Get filter values
+                    const statusFilter = document.getElementById('status-filter')?.value || '';
+                    const searchFilter = document.getElementById('search-input')?.value.trim() || '';
+                    
+                    // Build endpoint with filters
+                    let endpoint = this.user && ['operator', 'admin', 'owner'].includes(this.user.Role) 
+                        ? '/api/admin/orders' 
+                        : '/api/user/orders';
+                    
+                    const params = new URLSearchParams();
+                    if (statusFilter) {
+                        params.append('status', statusFilter);
+                    }
+                    
+                    if (params.toString()) {
+                        endpoint += '?' + params.toString();
+                    }
+                    
+                    const response = await this.apiRequest(endpoint);
+                    let orders = response.data || response || [];
+                    
+                    // Client-side search filtering
+                    if (searchFilter) {
+                        orders = orders.filter(order => {
+                            const searchLower = searchFilter.toLowerCase();
+                            return (
+                                (order.ContactName && order.ContactName.toLowerCase().includes(searchLower)) ||
+                                (order.ContactPhone && order.ContactPhone.includes(searchFilter)) ||
+                                (order.ServiceAddress && order.ServiceAddress.toLowerCase().includes(searchLower)) ||
+                                (order.ID && order.ID.toString().includes(searchFilter))
+                            );
+                        });
+                    }
+                    
+                    this.renderOrders(orders);
+                } catch (error) {
+                    console.error('Ошибка загрузки заказов:', error);
+                    this.showError('Ошибка загрузки заказов');
+                }
+            }
+
+            renderOrders(orders) {
+                const container = document.getElementById('orders-list');
+                
+                if (!orders || orders.length === 0) {
+                    container.innerHTML = '<div class="text-center">Заказов пока нет</div>';
+                    return;
+                }
+
+                container.innerHTML = orders.map(order => `
+                    <div class="card" onclick="app.showOrderDetailsModal(${order.ID})" style="cursor: pointer;">
+                        <div class="card-header">
+                            <div class="card-title">Заказ #${order.ID}</div>
+                            <div class="card-badge ${window.AppUtils.getOrderStatus(order.Status).class}">${window.AppUtils.getOrderStatus(order.Status).text}</div>
+                        </div>
+                        <div>
+                            <strong>Клиент:</strong> ${order.ContactName || 'Не указан'}<br>
+                            <strong>Телефон:</strong> ${window.AppUtils.formatPhone(order.ContactPhone)}<br>
+                            <strong>Адрес:</strong> ${order.ServiceAddress || 'Не указан'}<br>
+                            <strong>Стоимость:</strong> ${order.FinalCost ? window.AppUtils.formatCurrency(order.FinalCost) : 'Не указана'}<br>
+                            <strong>Создан:</strong> ${window.AppUtils.formatDate(order.CreatedAt)}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            async loadClients() {
+                try {
+                    const response = await this.apiRequest('/api/admin/clients');
+                    const clients = response.data || response || [];
+                    
+                    this.renderClients(clients);
+                } catch (error) {
+                    console.error('Ошибка загрузки клиентов:', error);
+                    this.showError('Ошибка загрузки клиентов');
+                }
+            }
+
+            renderClients(clients) {
+                const container = document.getElementById('clients-list');
+                
+                if (!clients || clients.length === 0) {
+                    container.innerHTML = '<div class="text-center">Клиентов пока нет</div>';
+                    return;
+                }
+
+                container.innerHTML = clients.map(client => `
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">${client.FirstName} ${client.LastName}</div>
+                            <div class="card-badge ${client.IsBlocked ? 'status-canceled' : 'status-completed'}">${client.IsBlocked ? 'Заблокирован' : 'Активен'}</div>
+                        </div>
+                        <div>
+                            <strong>Телефон:</strong> ${client.Phone || 'Не указан'}<br>
+                            <strong>Username:</strong> ${client.Nickname || 'Не указан'}<br>
+                            <strong>Роль:</strong> ${client.Role || 'user'}
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            loadProfile() {
+                const container = document.getElementById('profile-content');
+                
+                if (!this.user) {
+                    container.innerHTML = '<div>Ошибка загрузки профиля</div>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="form-group">
+                        <label class="form-label">Имя</label>
+                        <div class="form-control" style="background: var(--bg-tertiary);">${this.user.FirstName || ''}</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Фамилия</label>
+                        <div class="form-control" style="background: var(--bg-tertiary);">${this.user.LastName || ''}</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Телефон</label>
+                        <div class="form-control" style="background: var(--bg-tertiary);">${this.user.Phone || 'Не указан'}</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Роль</label>
+                        <div class="form-control" style="background: var(--bg-tertiary);">${this.user.Role || ''}</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ID пользователя</label>
+                        <div class="form-control" style="background: var(--bg-tertiary);">${this.user.ID || ''}</div>
+                    </div>
+                `;
+            }
+
+
+
+            async apiRequest(endpoint, options = {}) {
+                const url = `${window.APP_CONFIG.API_BASE}${endpoint}`;
+                
+                const defaultOptions = {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Client-Version': window.APP_CONFIG.VERSION
+                    }
+                };
+
+                // Add Telegram auth if available
+                if (window.Telegram?.WebApp?.initData) {
+                    defaultOptions.headers['X-Telegram-Auth'] = window.Telegram.WebApp.initData;
+                }
+
+                const requestOptions = { ...defaultOptions, ...options };
+
+                try {
+                    const response = await fetch(url, requestOptions);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Handle API response format
+                    if (data.status === 'error') {
+                        throw new Error(data.message);
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error('API Request failed:', endpoint, error);
+                    throw error;
+                }
+            }
+
+            startApp() {
+                // Hide loading screen
+                const loadingScreen = document.getElementById('loading-screen');
+                const app = document.getElementById('app');
+                
+                loadingScreen.classList.add('hidden');
+                app.classList.add('loaded');
+                
+                // Start periodic refresh
+                this.startPeriodicRefresh();
+                
+                console.log('✅ Сервис-Крым приложение запущено успешно!');
+            }
+
+            startPeriodicRefresh() {
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
+                }
+                
+                this.refreshInterval = setInterval(() => {
+                    if (this.currentPanel === 'orders') {
+                        this.loadOrders();
+                    } else if (this.currentPanel === 'dashboard') {
+                        this.loadDashboardData();
+                    }
+                }, window.APP_CONFIG.REFRESH_INTERVAL);
+            }
+
+            showNotification(message, type = 'info') {
+                const container = document.getElementById('notifications');
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.textContent = message;
+                
+                container.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, window.APP_CONFIG.NOTIFICATION_TIMEOUT);
+            }
+
+            showError(message) {
+                this.showNotification(message, 'error');
+            }
+
+            showSuccess(message) {
+                this.showNotification(message, 'success');
+            }
+
+            // Create order functionality
+            showCreateOrderModal() {
+                const modal = document.getElementById('order-modal');
+                const title = document.getElementById('order-modal-title');
+                const content = document.getElementById('order-modal-content');
+                
+                title.textContent = 'Создать новый заказ';
+                
+                content.innerHTML = `
+                    <form id="create-order-form">
+                        <div class="form-group">
+                            <label class="form-label">Имя клиента *</label>
+                            <input type="text" id="contact-name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Телефон *</label>
+                            <input type="tel" id="contact-phone" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Адрес услуги *</label>
+                            <textarea id="service-address" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Описание работ</label>
+                            <textarea id="description" class="form-control" rows="4" placeholder="Опишите что нужно сделать..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Тип услуги</label>
+                            <select id="service-type" class="form-control">
+                                <option value="">Выберите тип услуги</option>
+                                <option value="garbage_removal">Вывоз мусора</option>
+                                <option value="demolition">Демонтаж</option>
+                                <option value="cleaning">Уборка</option>
+                                <option value="other">Другое</option>
+                            </select>
+                        </div>
+                        ${this.user && ['operator', 'admin', 'owner'].includes(this.user.Role) ? `
+                        <div class="form-group">
+                            <label class="form-label">Стоимость (₽)</label>
+                            <input type="number" id="final-cost" class="form-control" min="0">
+                        </div>
+                        ` : ''}
+                        <div class="flex gap-10 mt-20">
+                            <button type="submit" class="btn btn-primary">Создать заказ</button>
+                            <button type="button" onclick="closeModal('order-modal')" class="btn btn-secondary">Отмена</button>
+                        </div>
+                    </form>
+                `;
+                
+                // Setup form handler
+                document.getElementById('create-order-form').addEventListener('submit', this.handleCreateOrder.bind(this));
+                
+                modal.classList.add('show');
+            }
+
+            async handleCreateOrder(event) {
+                event.preventDefault();
+                
+                const formData = {
+                    ContactName: document.getElementById('contact-name').value,
+                    ContactPhone: document.getElementById('contact-phone').value,
+                    ServiceAddress: document.getElementById('service-address').value,
+                    Description: document.getElementById('description').value,
+                    ServiceType: document.getElementById('service-type').value,
+                };
+                
+                // Add cost if user is operator/admin
+                const costInput = document.getElementById('final-cost');
+                if (costInput && costInput.value) {
+                    formData.FinalCost = parseFloat(costInput.value);
+                }
+                
+                try {
+                    const endpoint = this.user && ['operator', 'admin', 'owner'].includes(this.user.Role) 
+                        ? '/api/admin/create-order' 
+                        : '/api/user/create-order';
+                    
+                    const response = await this.apiRequest(endpoint, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    this.showSuccess('Заказ успешно создан!');
+                    closeModal('order-modal');
+                    
+                    // Refresh orders if on orders panel
+                    if (this.currentPanel === 'orders') {
+                        await this.loadOrders();
+                    }
+                    
+                } catch (error) {
+                    console.error('Ошибка создания заказа:', error);
+                    this.showError('Ошибка создания заказа: ' + error.message);
+                }
+            }
+
+            async showOrderDetailsModal(orderId) {
+                try {
+                    const endpoint = this.user && ['operator', 'admin', 'owner'].includes(this.user.Role) 
+                        ? `/api/admin/order/${orderId}` 
+                        : `/api/user/order/${orderId}`;
+                    
+                    const response = await this.apiRequest(endpoint);
+                    const order = response.data || response;
+                    
+                    const modal = document.getElementById('order-details-modal');
+                    const title = document.getElementById('order-details-title');
+                    const content = document.getElementById('order-details-content');
+                    
+                    title.textContent = `Заказ #${order.ID}`;
+                    
+                    const isOperator = this.user && ['operator', 'admin', 'owner'].includes(this.user.Role);
+                    const statusConfig = window.AppUtils.getOrderStatus(order.Status);
+                    
+                    content.innerHTML = `
+                        <div class="card-badge ${statusConfig.class} mb-20">${statusConfig.text}</div>
+                        
+                        <div class="grid grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Клиент</label>
+                                <div class="form-control" style="background: var(--bg-tertiary);">${order.ContactName || 'Не указан'}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Телефон</label>
+                                <div class="form-control" style="background: var(--bg-tertiary);">${window.AppUtils.formatPhone(order.ContactPhone)}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Адрес</label>
+                            <div class="form-control" style="background: var(--bg-tertiary);">${order.ServiceAddress || 'Не указан'}</div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Описание</label>
+                            <div class="form-control" style="background: var(--bg-tertiary); min-height: 80px;">${order.Description || 'Нет описания'}</div>
+                        </div>
+                        
+                        <div class="grid grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Тип услуги</label>
+                                <div class="form-control" style="background: var(--bg-tertiary);">${order.ServiceType || 'Не указан'}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Стоимость</label>
+                                <div class="form-control" style="background: var(--bg-tertiary);">${order.FinalCost ? window.AppUtils.formatCurrency(order.FinalCost) : 'Не указана'}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Создан</label>
+                                <div class="form-control" style="background: var(--bg-tertiary);">${window.AppUtils.formatDate(order.CreatedAt)}</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Обновлен</label>
+                                <div class="form-control" style="background: var(--bg-tertiary);">${window.AppUtils.formatDate(order.UpdatedAt)}</div>
+                            </div>
+                        </div>
+                        
+                        ${order.Photos && order.Photos.length > 0 ? `
+                        <div class="form-group">
+                            <label class="form-label">Фотографии</label>
+                            <div class="grid grid-3">
+                                ${order.Photos.map(photo => `
+                                    <img src="${photo}" alt="Фото заказа" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; cursor: pointer;" onclick="window.open('${photo}', '_blank')">
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${order.Videos && order.Videos.length > 0 ? `
+                        <div class="form-group">
+                            <label class="form-label">Видео</label>
+                            <div class="grid grid-2">
+                                ${order.Videos.map(video => `
+                                    <video controls style="width: 100%; height: 120px; border-radius: 8px;">
+                                        <source src="${video}" type="video/mp4">
+                                        Ваш браузер не поддерживает видео
+                                    </video>
+                                `).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        ${isOperator ? `
+                        <div class="form-group">
+                            <label class="form-label">Действия с заказом</label>
+                            <div class="flex gap-10">
+                                ${order.Status === 'new' || order.Status === 'awaiting_cost' ? `
+                                    <button onclick="app.showSetCostModal(${order.ID})" class="btn btn-primary">Установить стоимость</button>
+                                ` : ''}
+                                ${order.Status === 'inprogress' ? `
+                                    <button onclick="app.confirmOrderAction(${order.ID}, 'complete')" class="btn btn-success">Выполнен</button>
+                                ` : ''}
+                                ${order.Status !== 'completed' && order.Status !== 'canceled' ? `
+                                    <button onclick="app.showCancelOrderModal(${order.ID})" class="btn btn-danger">Отменить</button>
+                                ` : ''}
+                                <button onclick="app.showMediaModal(${order.ID})" class="btn btn-secondary">Добавить файлы</button>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="flex gap-10 mt-20">
+                            <button onclick="closeModal('order-details-modal')" class="btn btn-secondary">Закрыть</button>
+                        </div>
+                    `;
+                    
+                    modal.classList.add('show');
+                    
+                } catch (error) {
+                    console.error('Ошибка загрузки деталей заказа:', error);
+                    this.showError('Ошибка загрузки деталей заказа');
+                }
+            }
+
+            showSetCostModal(orderId) {
+                this.confirmAction(
+                    'Установить стоимость', 
+                    `
+                    <div class="form-group">
+                        <label class="form-label">Стоимость заказа (₽)</label>
+                        <input type="number" id="cost-input" class="form-control" min="0" required>
+                    </div>
+                    `,
+                    async () => {
+                        const cost = document.getElementById('cost-input').value;
+                        if (!cost || isNaN(cost) || cost <= 0) {
+                            this.showError('Введите корректную стоимость');
+                            return;
+                        }
+                        
+                        try {
+                            await this.apiRequest(`/api/admin/order/${orderId}/action`, {
+                                method: 'POST',
+                                body: { action: 'set_cost', cost: parseFloat(cost) }
+                            });
+                            
+                            this.showSuccess('Стоимость установлена');
+                            closeModal('order-details-modal');
+                            if (this.currentPanel === 'orders') {
+                                await this.loadOrders();
+                            }
+                        } catch (error) {
+                            this.showError('Ошибка установки стоимости: ' + error.message);
+                        }
+                    }
+                );
+            }
+
+            showCancelOrderModal(orderId) {
+                this.confirmAction(
+                    'Отменить заказ',
+                    `
+                    <div class="form-group">
+                        <label class="form-label">Причина отмены</label>
+                        <textarea id="cancel-reason" class="form-control" rows="3" required placeholder="Укажите причину отмены заказа..."></textarea>
+                    </div>
+                    `,
+                    async () => {
+                        const reason = document.getElementById('cancel-reason').value.trim();
+                        if (!reason) {
+                            this.showError('Укажите причину отмены');
+                            return;
+                        }
+                        
+                        try {
+                            await this.apiRequest(`/api/admin/order/${orderId}/action`, {
+                                method: 'POST',
+                                body: { action: 'cancel', reason: reason }
+                            });
+                            
+                            this.showSuccess('Заказ отменен');
+                            closeModal('order-details-modal');
+                            if (this.currentPanel === 'orders') {
+                                await this.loadOrders();
+                            }
+                        } catch (error) {
+                            this.showError('Ошибка отмены заказа: ' + error.message);
+                        }
+                    }
+                );
+            }
+
+            async confirmOrderAction(orderId, action) {
+                const actionTexts = {
+                    'complete': 'Отметить заказ как выполненный?',
+                    'accept': 'Принять заказ в работу?',
+                    'reject': 'Отклонить заказ?'
+                };
+                
+                this.confirmAction(
+                    'Подтверждение действия',
+                    `<p>${actionTexts[action] || 'Выполнить действие?'}</p>`,
+                    async () => {
+                        try {
+                            await this.apiRequest(`/api/admin/order/${orderId}/action`, {
+                                method: 'POST',
+                                body: { action: action }
+                            });
+                            
+                            this.showSuccess('Действие выполнено успешно');
+                            closeModal('order-details-modal');
+                            if (this.currentPanel === 'orders') {
+                                await this.loadOrders();
+                            }
+                        } catch (error) {
+                            this.showError('Ошибка выполнения действия: ' + error.message);
+                        }
+                    }
+                );
+            }
+
+            showMediaModal(orderId) {
+                const modal = document.getElementById('media-modal');
+                modal.dataset.orderId = orderId;
+                
+                // Reset file input and preview
+                document.getElementById('media-input').value = '';
+                document.getElementById('media-preview').innerHTML = '';
+                
+                // Setup file input handler
+                document.getElementById('media-input').addEventListener('change', this.handleFilePreview.bind(this));
+                document.getElementById('upload-media-btn').onclick = () => this.handleMediaUpload(orderId);
+                
+                modal.classList.add('show');
+            }
+
+            handleFilePreview(event) {
+                const files = event.target.files;
+                const preview = document.getElementById('media-preview');
+                preview.innerHTML = '';
+                
+                Array.from(files).forEach((file, index) => {
+                    const isImage = file.type.startsWith('image/');
+                    const isVideo = file.type.startsWith('video/');
+                    
+                    if (isImage || isVideo) {
+                        const div = document.createElement('div');
+                        div.style.cssText = 'display: inline-block; margin: 10px; text-align: center;';
+                        
+                        if (isImage) {
+                            const img = document.createElement('img');
+                            img.style.cssText = 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px;';
+                            img.src = URL.createObjectURL(file);
+                            div.appendChild(img);
+                        } else if (isVideo) {
+                            const video = document.createElement('video');
+                            video.style.cssText = 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px;';
+                            video.src = URL.createObjectURL(file);
+                            video.controls = false;
+                            div.appendChild(video);
+                        }
+                        
+                        const name = document.createElement('div');
+                        name.style.cssText = 'font-size: 12px; margin-top: 5px; color: var(--text-muted);';
+                        name.textContent = file.name.length > 15 ? file.name.substring(0, 15) + '...' : file.name;
+                        div.appendChild(name);
+                        
+                        preview.appendChild(div);
+                    }
+                });
+            }
+
+            async handleMediaUpload(orderId) {
+                const fileInput = document.getElementById('media-input');
+                const files = fileInput.files;
+                
+                if (files.length === 0) {
+                    this.showError('Выберите файлы для загрузки');
+                    return;
+                }
+                
+                const uploadBtn = document.getElementById('upload-media-btn');
+                uploadBtn.disabled = true;
+                uploadBtn.textContent = 'Загружается...';
+                
+                try {
+                    const uploadedFiles = { photos: [], videos: [] };
+                    
+                    for (const file of files) {
+                        const formData = new FormData();
+                        formData.append('media', file);
+                        
+                        const response = await fetch(`${window.APP_CONFIG.API_BASE}/api/upload-media`, {
+                            method: 'POST',
+                            headers: {
+                                'X-Telegram-Auth': window.Telegram?.WebApp?.initData || ''
+                            },
+                            body: formData
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        
+                        const result = await response.json();
+                        if (result.status === 'error') {
+                            throw new Error(result.message);
+                        }
+                        
+                        const fileData = result.data || result;
+                        if (fileData.type === 'video') {
+                            uploadedFiles.videos.push(fileData.file_id);
+                        } else {
+                            uploadedFiles.photos.push(fileData.file_id);
+                        }
+                    }
+                    
+                    // Add media to order
+                    await this.apiRequest(`/api/admin/order/${orderId}/add-media`, {
+                        method: 'POST',
+                        body: uploadedFiles
+                    });
+                    
+                    this.showSuccess('Файлы успешно загружены');
+                    closeModal('media-modal');
+                    
+                } catch (error) {
+                    console.error('Ошибка загрузки файлов:', error);
+                    this.showError('Ошибка загрузки файлов: ' + error.message);
+                } finally {
+                    uploadBtn.disabled = false;
+                    uploadBtn.textContent = 'Загрузить';
+                }
+            }
+
+            confirmAction(title, content, onConfirm) {
+                const modal = document.getElementById('confirm-modal');
+                const titleElement = document.getElementById('confirm-title');
+                const contentElement = document.getElementById('confirm-content');
+                
+                titleElement.textContent = title;
+                
+                // Replace the content but keep the buttons
+                contentElement.innerHTML = `
+                    ${content}
+                    <div class="flex gap-10 mt-20">
+                        <button id="confirm-yes-btn" class="btn btn-primary">Да</button>
+                        <button onclick="closeModal('confirm-modal')" class="btn btn-secondary">Нет</button>
+                    </div>
+                `;
+                
+                document.getElementById('confirm-yes-btn').onclick = () => {
+                    closeModal('confirm-modal');
+                    onConfirm();
+                };
+                
+                modal.classList.add('show');
+            }
+        }
+
+        // Global functions
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+        }
+
+        // Logo animation setup
+        function setupLogoAnimation() {
+            const logoElement = document.querySelector('.service-crimea-animated');
+            const subtitleElement = document.querySelector('.service-subtitle');
+            
+            if (!logoElement) return;
+            
+            // Start the entrance animation
+            console.log('🎬 Starting logo entrance animation');
+            
+            // After main logo animation completes, make it static
+            setTimeout(() => {
+                logoElement.classList.add('loaded');
+                console.log('✅ Logo animation completed - now static with construction colors');
+            }, 3000); // 0.5s delay + 2.5s animation = 3s total
+            
+            // After subtitle animation completes, make it static
+            if (subtitleElement) {
+                setTimeout(() => {
+                    subtitleElement.classList.add('loaded');
+                    console.log('✅ Subtitle letter-by-letter animation completed - now static');
+                }, 7500); // 6.85s последняя буква + 0.6s анимация + 0.05s буфер = 7.5s total
+            }
+        }
+
+        // Initialize app when DOM is ready
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new ServiceApp();
+            app.init();
+            
+            // Setup logo animation
+            setupLogoAnimation();
+            
+            // Setup global event handlers
+            document.getElementById('create-order-btn').addEventListener('click', () => {
+                app.showCreateOrderModal();
+            });
+            
+            // Setup filters for orders
+            document.getElementById('status-filter').addEventListener('change', () => {
+                if (app.currentPanel === 'orders') {
+                    app.loadOrders();
+                }
+            });
+            
+            document.getElementById('search-input').addEventListener('input', window.AppUtils.debounce(() => {
+                if (app.currentPanel === 'orders') {
+                    app.loadOrders();
+                }
+            }, 500));
+            
+            document.getElementById('refresh-orders-btn').addEventListener('click', () => {
+                if (app.currentPanel === 'orders') {
+                    app.loadOrders();
+                } else if (app.currentPanel === 'dashboard') {
+                    app.loadDashboardData();
+                }
+            });
+        });
+
+        // Make app available globally for debugging
+        window.ServiceApp = app;
+    </script>
 </body>
 </html>

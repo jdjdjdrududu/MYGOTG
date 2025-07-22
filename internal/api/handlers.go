@@ -212,7 +212,8 @@ func GetOrders(w http.ResponseWriter, r *http.Request) {
 	var orders []models.Order
 	var err error
 
-	if user.Role == constants.ROLE_USER {
+	// Для пользователей и владельцев, запрашивающих свои личные заказы через /api/user/orders
+	if user.Role == constants.ROLE_USER || (user.Role == constants.ROLE_OWNER && r.URL.Path == "/api/user/orders") {
 		var userStatusesToFetch []string
 		switch statusKey {
 		case "new":
@@ -450,7 +451,7 @@ func HandleAdminOrderAction(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusInternalServerError, "User context not found")
 		return
 	}
-	bot, ok := r.Context().Value("bot").(*handlers.BotHandler)
+	bot, ok := r.Context().Value(BotContextKey).(*handlers.BotHandler)
 	if !ok {
 		writeJSONError(w, http.StatusInternalServerError, "Bot context not found")
 		return
@@ -729,7 +730,7 @@ func HandleDriverOrderAction(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusInternalServerError, "User context not found")
 		return
 	}
-	bot, ok := r.Context().Value("bot").(*handlers.BotHandler)
+	bot, ok := r.Context().Value(BotContextKey).(*handlers.BotHandler)
 	if !ok {
 		writeJSONError(w, http.StatusInternalServerError, "Bot context not found")
 		return
@@ -792,7 +793,7 @@ func HandleUserOrderAction(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusInternalServerError, "User context not found")
 		return
 	}
-	bot, ok := r.Context().Value("bot").(*handlers.BotHandler)
+	bot, ok := r.Context().Value(BotContextKey).(*handlers.BotHandler)
 	if !ok {
 		writeJSONError(w, http.StatusInternalServerError, "Bot context not found")
 		return
@@ -887,7 +888,7 @@ func UpdateSettlementStatus(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusInternalServerError, "User context not found")
 		return
 	}
-	bot, ok := r.Context().Value("bot").(*handlers.BotHandler)
+	bot, ok := r.Context().Value(BotContextKey).(*handlers.BotHandler)
 	if !ok {
 		writeJSONError(w, http.StatusInternalServerError, "Bot context not found")
 		return
@@ -919,10 +920,11 @@ func UpdateSettlementStatus(w http.ResponseWriter, r *http.Request) {
 	var comment sql.NullString
 	var driverMessageText string
 
-	if req.Status == "approved" {
+	switch req.Status {
+	case "approved":
 		newStatus = constants.SETTLEMENT_STATUS_APPROVED
 		driverMessageText = fmt.Sprintf("✅ Ваш отчет #%d был утвержден оператором %s.", settlement.ID, utils.GetUserDisplayName(user))
-	} else if req.Status == "rejected" {
+	case "rejected":
 		if req.Reason == "" {
 			writeJSONError(w, http.StatusBadRequest, "Rejection reason is required")
 			return
@@ -931,7 +933,7 @@ func UpdateSettlementStatus(w http.ResponseWriter, r *http.Request) {
 		comment = sql.NullString{String: req.Reason, Valid: true}
 		driverMessageText = fmt.Sprintf("❌ Ваш отчет #%d был отклонен оператором %s.\nПричина: %s\n\nПожалуйста, создайте новый, исправленный отчет.",
 			settlement.ID, utils.GetUserDisplayName(user), req.Reason)
-	} else {
+	default:
 		writeJSONError(w, http.StatusBadRequest, "Invalid status")
 		return
 	}
@@ -952,7 +954,7 @@ func UpdateSettlementStatus(w http.ResponseWriter, r *http.Request) {
 
 // GetClientConfig
 func GetClientConfig(w http.ResponseWriter, r *http.Request) {
-	cfg, ok := r.Context().Value("config").(*config.Config)
+	cfg, ok := r.Context().Value(ConfigContextKey).(*config.Config)
 	if !ok {
 		writeJSONError(w, http.StatusInternalServerError, "Config not found in context")
 		return
@@ -994,7 +996,7 @@ func CreateUserOrder(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusInternalServerError, "Не удалось определить пользователя из контекста")
 		return
 	}
-	bot, botOk := r.Context().Value("bot").(*handlers.BotHandler)
+	bot, botOk := r.Context().Value(BotContextKey).(*handlers.BotHandler)
 	if !botOk {
 		log.Printf("CRITICAL: Bot context not found in CreateUserOrder. Cannot send notification.")
 	}
@@ -1023,11 +1025,30 @@ func CreateUserOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Шаг 6: Если бот доступен, вызываем функцию для отправки уведомлений операторам.
-	// Делаем это в отдельной горутине, чтобы не замедлять ответ API.
 	if botOk {
 		go bot.NotifyOperatorsAboutNewOrder(newOrderID, user.ChatID)
 	}
 
-	// Шаг 7: Отправляем успешный ответ.
-	writeJSONSuccess(w, "Заказ успешно создан!", map[string]int64{"order_id": newOrderID})
+	// Шаг 7: Возвращаем успешный ответ с ID созданного заказа.
+	writeJSONSuccess(w, "Заказ успешно создан! Мы свяжемся с вами для согласования деталей.", map[string]int64{"order_id": newOrderID})
+}
+
+// GetTestUserProfile - ВРЕМЕННАЯ функция для тестирования веб-приложения без аутентификации
+// ВНИМАНИЕ: Эта функция создана только для отладки и должна быть удалена в продакшене!
+func GetTestUserProfile(w http.ResponseWriter, r *http.Request) {
+	log.Println("⚠️ ТЕСТОВЫЙ ЗАПРОС: Используется временный тестовый профиль пользователя")
+
+	// Создаем тестового пользователя
+	testUser := map[string]interface{}{
+		"ID":        999999,
+		"Role":      "operator",
+		"FirstName": "Тестовый",
+		"LastName":  "Пользователь",
+		"Nickname":  "testuser",
+		"ChatID":    999999,
+		"Phone":     "+7999999999",
+		"IsBlocked": false,
+	}
+
+	writeJSONSuccess(w, "Test profile retrieved successfully", testUser)
 }

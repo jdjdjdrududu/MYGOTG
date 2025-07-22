@@ -44,6 +44,34 @@
     --form-field-placeholder-color: var(--tg-hint-color);
     --form-group-gap: 20px; /* Увеличим отступ между группами полей */
     --fieldset-border-color: #e0e0e0; /* Легкий серый для разделителя fieldset */
+
+    /* Улучшенные переменные для анимаций */
+    --transition-duration-fast: 0.2s;
+    --transition-duration-normal: 0.6s;
+    --transition-duration-slow: 0.8s;
+    --transition-duration-ultra-smooth: 1.0s;
+    
+    /* Продвинутые easing функции для максимальной плавности */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out-circ: cubic-bezier(0.08, 0.82, 0.17, 1);
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-in-out-back: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --ease-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+    --ease-ultra-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+    --ease-elegant: cubic-bezier(0.215, 0.61, 0.355, 1);
+    --ease-anticipate: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    
+    /* Новые переменные для blur и opacity эффектов */
+    --blur-light: blur(4px);
+    --blur-medium: blur(8px);
+    --blur-heavy: blur(12px);
+    --backdrop-opacity: 0.95;
+    
+    /* Переменные для глубины */
+    --shadow-depth-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    --shadow-depth-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    --shadow-depth-3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+    --shadow-depth-4: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
 }
 
 /* === НОВЫЙ СТИЛЬ: для отключенных кнопок === */
@@ -56,54 +84,122 @@ button:disabled {
 /* === КОНЕЦ НОВОГО СТИЛЯ === */
 
 .button-primary {
+    position: relative;
     display: inline-block;
     padding: 12px 24px;
     border: none;
     border-radius: var(--radius-m);
-    background-color: var(--tg-button-color);
-    color: var(--tg-button-text-color);
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    box-shadow: var(--shadow-soft);
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    box-shadow: var(--shadow-depth-1);
+    overflow: hidden;
+    
+    /* Убираем стандартные эффекты нажатия на мобильных */
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    
+    /* Добавляем поддержку для псевдоэлементов */
+    z-index: 1;
+    background-color: var(--tg-button-color);
+    color: var(--tg-button-text-color);
 }
 
 .button-primary:hover {
-    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-depth-3);
+    filter: brightness(1.05);
 }
 
 .button-primary:active {
-    transform: scale(0.98);
-    filter: brightness(0.95);
+    transform: translateY(-1px) scale(0.98);
+    transition-duration: 0.1s;
+}
+
+.button-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: all var(--transition-duration-fast) var(--ease-out-circ);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.button-primary:active::before {
+    width: 300px;
+    height: 300px;
+    opacity: 1;
+    transition: all 0.6s var(--ease-out-circ);
 }
 
 /* === НОВЫЙ БЛОК ДЛЯ button-success (добавлен для кнопки "Позвонить") === */
 .button-success {
+    position: relative;
     display: inline-block;
     padding: 12px 24px;
     border: none;
     border-radius: var(--radius-m);
-    background-color: var(--button-success-color); /* Используем зеленую переменную */
-    color: var(--tg-button-text-color); /* Текст белый */
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    box-shadow: var(--shadow-soft);
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    box-shadow: var(--shadow-depth-1);
+    overflow: hidden;
+    
+    /* Убираем стандартные эффекты нажатия на мобильных */
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    
+    /* Добавляем поддержку для псевдоэлементов */
+    z-index: 1;
+    background-color: var(--button-success-color);
+    color: var(--tg-button-text-color);
 }
 
 .button-success:hover {
-    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-depth-3);
+    filter: brightness(1.05);
 }
 
 .button-success:active {
-    transform: scale(0.98);
-    filter: brightness(0.95);
+    transform: translateY(-1px) scale(0.98);
+    transition-duration: 0.1s;
+}
+
+.button-success::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: all var(--transition-duration-fast) var(--ease-out-circ);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.button-success:active::before {
+    width: 300px;
+    height: 300px;
+    opacity: 1;
+    transition: all 0.6s var(--ease-out-circ);
 }
 /* === КОНЕЦ: ВСТАВЬТЕ ЭТОТ БЛОК === */
 
@@ -121,6 +217,7 @@ body {
     overflow: hidden;
     height: 100vh;
     width: 100vw;
+    padding-bottom: 100px; /* Место для нижней панели + FAB */
 }
 
 /*
@@ -133,6 +230,7 @@ body {
     overflow: hidden;
 }
 
+/* Базовая настройка панелей для ультра-плавных анимаций */
 .panel {
     position: absolute;
     top: 0;
@@ -141,12 +239,29 @@ body {
     height: 100%;
     background-color: var(--tg-bg-color);
     overflow-y: auto;
-    padding-bottom: 90px; /* Отступ для нижнего меню */
+    overflow-x: hidden;
+    padding-bottom: 120px; /* Увеличиваем нижний отступ */
     box-sizing: border-box;
     transform: translateX(100%);
     display: none;
-    will-change: transform;
+    will-change: transform, opacity, filter;
     flex-direction: column;
+    
+    /* Максимальное аппаратное ускорение */
+    backface-visibility: hidden;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    
+    /* Оптимизация для композитного слоя */
+    isolation: isolate;
+    contain: layout style paint;
+    
+    /* Предотвращение layout shift */
+    min-height: 100vh;
+    
+    /* Плавный скроллинг */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Переопределение padding для панелей, управляющих им внутренне */
@@ -172,50 +287,122 @@ body {
 
 /* Кнопка для опасных действий (красная) */
 .button-danger {
+    position: relative;
     display: inline-block;
     padding: 12px 24px;
     border: none;
     border-radius: var(--radius-m);
-    background-color: var(--button-danger-color);
-    color: var(--tg-button-text-color);
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    box-shadow: var(--shadow-soft);
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    box-shadow: var(--shadow-depth-1);
+    overflow: hidden;
+    
+    /* Убираем стандартные эффекты нажатия на мобильных */
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    
+    /* Добавляем поддержку для псевдоэлементов */
+    z-index: 1;
+    background-color: var(--button-danger-color);
+    color: var(--tg-button-text-color);
 }
+
 .button-danger:hover {
-    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-depth-3);
+    filter: brightness(1.05);
 }
+
 .button-danger:active {
-    transform: scale(0.98);
-    filter: brightness(0.95);
+    transform: translateY(-1px) scale(0.98);
+    transition-duration: 0.1s;
+}
+
+.button-danger::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: all var(--transition-duration-fast) var(--ease-out-circ);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.button-danger:active::before {
+    width: 300px;
+    height: 300px;
+    opacity: 1;
+    transition: all 0.6s var(--ease-out-circ);
 }
 
 /* Кнопка для действий, требующих внимания (оранжевая) */
 .button-warning {
+    position: relative;
     display: inline-block;
     padding: 12px 24px;
     border: none;
     border-radius: var(--radius-m);
-    background-color: var(--status-progress); /* Оранжевый цвет */
-    color: var(--tg-button-text-color);
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    box-shadow: var(--shadow-soft);
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    box-shadow: var(--shadow-depth-1);
+    overflow: hidden;
+    
+    /* Убираем стандартные эффекты нажатия на мобильных */
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    
+    /* Добавляем поддержку для псевдоэлементов */
+    z-index: 1;
+    background-color: var(--status-progress);
+    color: var(--tg-button-text-color);
 }
+
 .button-warning:hover {
-    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-depth-3);
+    filter: brightness(1.05);
 }
+
 .button-warning:active {
-    transform: scale(0.98);
-    filter: brightness(0.95);
+    transform: translateY(-1px) scale(0.98);
+    transition-duration: 0.1s;
+}
+
+.button-warning::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: all var(--transition-duration-fast) var(--ease-out-circ);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.button-warning:active::before {
+    width: 300px;
+    height: 300px;
+    opacity: 1;
+    transition: all 0.6s var(--ease-out-circ);
 }
 
 .panel.visible {
@@ -228,29 +415,168 @@ body {
 }
 
 /*
- * Анимации переходов панелей
+ * Анимации переходов панелей - УЛУЧШЕННЫЕ ПЛАВНЫЕ ПЕРЕХОДЫ
  */
-@keyframes slide-in-from-right {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
-}
-@keyframes slide-out-to-left {
-    from { transform: translateX(0); }
-    to { transform: translateX(-100%); }
-}
-@keyframes slide-in-from-left {
-    from { transform: translateX(-100%); }
-    to { transform: translateX(0); }
-}
-@keyframes slide-out-to-right {
-    from { transform: translateX(0); }
-    to { transform: translateX(100%); }
+
+/* НОВЫЕ УЛЬТРА-ПЛАВНЫЕ KEYFRAMES С BLUR ЭФФЕКТАМИ */
+@keyframes slide-in-from-right-ultra-smooth {
+    0% { 
+        transform: translateX(100%) scale(0.92) rotateY(5deg);
+        opacity: 0;
+        filter: var(--blur-medium);
+        backdrop-filter: var(--blur-light);
+    }
+    50% {
+        transform: translateX(50%) scale(0.96) rotateY(2deg);
+        opacity: 0.6;
+        filter: var(--blur-light);
+    }
+    100% { 
+        transform: translateX(0) scale(1) rotateY(0deg);
+        opacity: 1;
+        filter: none;
+        backdrop-filter: none;
+    }
 }
 
-.slide-in-right { animation: slide-in-from-right 0.3s forwards ease-out; }
-.slide-out-to-left { animation: slide-out-to-left 0.3s forwards ease-out; }
-.slide-in-left { animation: slide-in-from-left 0.3s forwards ease-out; }
-.slide-out-to-right { animation: slide-out-to-right 0.3s forwards ease-out; }
+@keyframes slide-out-to-left-ultra-smooth {
+    0% { 
+        transform: translateX(0) scale(1) rotateY(0deg);
+        opacity: 1;
+        filter: none;
+        z-index: 10;
+    }
+    50% {
+        transform: translateX(-25%) scale(0.96) rotateY(-2deg);
+        opacity: 0.7;
+        filter: var(--blur-light);
+    }
+    100% { 
+        transform: translateX(-50%) scale(0.88) rotateY(-8deg);
+        opacity: 0.2;
+        filter: var(--blur-medium);
+        z-index: 1;
+    }
+}
+
+@keyframes slide-in-from-left-ultra-smooth {
+    0% { 
+        transform: translateX(-100%) scale(0.92) rotateY(-5deg);
+        opacity: 0;
+        filter: var(--blur-medium);
+        backdrop-filter: var(--blur-light);
+    }
+    50% {
+        transform: translateX(-50%) scale(0.96) rotateY(-2deg);
+        opacity: 0.6;
+        filter: var(--blur-light);
+    }
+    100% { 
+        transform: translateX(0) scale(1) rotateY(0deg);
+        opacity: 1;
+        filter: none;
+        backdrop-filter: none;
+    }
+}
+
+@keyframes slide-out-to-right-ultra-smooth {
+    0% { 
+        transform: translateX(0) scale(1) rotateY(0deg);
+        opacity: 1;
+        filter: none;
+        z-index: 10;
+    }
+    50% {
+        transform: translateX(25%) scale(0.96) rotateY(2deg);
+        opacity: 0.7;
+        filter: var(--blur-light);
+    }
+    100% { 
+        transform: translateX(100%) scale(0.88) rotateY(8deg);
+        opacity: 0;
+        filter: var(--blur-medium);
+        z-index: 1;
+    }
+}
+
+/* Параллакс эффект для фонового содержимого - улучшенный */
+@keyframes parallax-slide-left-smooth {
+    0% { transform: translateX(0) scale(1); opacity: 1; }
+    100% { transform: translateX(-15%) scale(0.95); opacity: 0.8; }
+}
+
+@keyframes parallax-slide-right-smooth {
+    0% { transform: translateX(0) scale(1); opacity: 1; }
+    100% { transform: translateX(15%) scale(0.95); opacity: 0.8; }
+}
+
+/* Новая анимация для плавного появления контента */
+@keyframes content-fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+        filter: var(--blur-light);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: none;
+    }
+}
+
+/* ПРИМЕНЕНИЕ УЛУЧШЕННЫХ АНИМАЦИЙ */
+.slide-in-right { 
+    animation: slide-in-from-right-ultra-smooth var(--transition-duration-slow) var(--ease-elegant) forwards;
+    will-change: transform, opacity, filter;
+}
+
+.slide-out-to-left { 
+    animation: slide-out-to-left-ultra-smooth var(--transition-duration-slow) var(--ease-elegant) forwards;
+    will-change: transform, opacity, filter;
+}
+
+.slide-in-left { 
+    animation: slide-in-from-left-ultra-smooth var(--transition-duration-slow) var(--ease-elegant) forwards;
+    will-change: transform, opacity, filter;
+}
+
+.slide-out-to-right { 
+    animation: slide-out-to-right-ultra-smooth var(--transition-duration-slow) var(--ease-elegant) forwards;
+    will-change: transform, opacity, filter;
+}
+
+/* Добавляем класс для плавного появления контента */
+.content-fade-in {
+    animation: content-fade-in var(--transition-duration-normal) var(--ease-ultra-smooth) forwards;
+    animation-delay: 0.3s;
+    opacity: 0;
+}
+
+/* Добавляем staggered анимацию для элементов списка */
+.stagger-animation > * {
+    animation: content-fade-in var(--transition-duration-normal) var(--ease-ultra-smooth) forwards;
+    opacity: 0;
+}
+
+.stagger-animation > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-animation > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-animation > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-animation > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-animation > *:nth-child(5) { animation-delay: 0.5s; }
+.stagger-animation > *:nth-child(6) { animation-delay: 0.6s; }
+.stagger-animation > *:nth-child(7) { animation-delay: 0.7s; }
+.stagger-animation > *:nth-child(8) { animation-delay: 0.8s; }
+.stagger-animation > *:nth-child(9) { animation-delay: 0.9s; }
+.stagger-animation > *:nth-child(10) { animation-delay: 1.0s; }
+
+/* Добавляем параллакс эффект для панелей, которые остаются позади */
+.panel.parallax-left {
+    animation: parallax-slide-left var(--transition-duration-normal) var(--ease-out-expo) forwards;
+}
+
+.panel.parallax-right {
+    animation: parallax-slide-right var(--transition-duration-normal) var(--ease-out-expo) forwards;
+}
 
 /* Утилитарный класс для скрытия элементов */
 .hidden { display: none !important; }
@@ -273,6 +599,7 @@ body {
     flex-shrink: 0;
     width: 100%; /* Убедитесь, что занимает всю ширину */
     box-sizing: border-box; /* Включает padding в ширину */
+    min-height: 60px;
 }
 
 .panel-header h2 {
@@ -280,6 +607,9 @@ body {
     font-size: 24px;
     font-weight: 700;
     flex-grow: 0;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .back-button {
@@ -288,11 +618,29 @@ body {
     font-size: 28px;
     color: var(--tg-hint-color);
     cursor: pointer;
-    padding: 0;
+    padding: 8px;
+    border-radius: 50%;
     position: absolute;
     left: 15px;
     top: 50%;
     transform: translateY(-50%);
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-button:hover {
+    background-color: rgba(0, 122, 255, 0.1);
+    color: var(--tg-link-color);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.back-button:active {
+    transform: translateY(-50%) scale(0.95);
+    background-color: rgba(0, 122, 255, 0.2);
 }
 
 /*
@@ -304,6 +652,9 @@ body {
     padding: 5px 0;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
 }
 .filters-container::-webkit-scrollbar { display: none; }
 
@@ -334,6 +685,8 @@ body {
 }
 .search-input-wrapper {
     position: relative;
+    margin-bottom: 20px;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
 }
 .lottie-search-icon {
     position: absolute;
@@ -360,6 +713,27 @@ body {
     border-color: var(--tg-link-color);
 }
 
+.search-input-wrapper:focus-within {
+    transform: translateY(-2px);
+}
+
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="email"] {
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    border: 2px solid transparent;
+}
+
+input[type="search"]:focus,
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="email"]:focus {
+    border-color: var(--tg-link-color);
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+    transform: scale(1.02);
+}
+
 /*
  * Стили для списка контента и карточек
  */
@@ -372,6 +746,8 @@ body {
     flex-direction: column;
     gap: 12px;
     box-sizing: border-box;
+    min-height: 200px; /* Предотвращает collapse при пустом списке */
+    transition: min-height var(--transition-duration-normal) var(--ease-smooth);
 }
 
 .card {
@@ -385,6 +761,8 @@ body {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: var(--shadow-soft);
     border: 1px solid #E9EDF5;
+    min-height: 100px;
+    contain: layout style; /* CSS containment для лучшей производительности */
 }
 .card:hover {
     transform: translateY(-3px);
@@ -644,6 +1022,7 @@ select:required option[value=""] {
     height: 100%;
     object-fit: cover; /* Изображение/видео полностью заполняет контейнер, обрезая лишнее */
     display: block; /* Убираем лишние пробелы под img/video */
+    background-color: var(--tg-bg-color); /* Placeholder цвет */
 }
 
 /* Кнопка удаления медиа поверх превью */
@@ -851,56 +1230,165 @@ select:required option[value=""] {
 }
 
 /*
- * Нижняя навигационная панель (Bottom Ribbon)
+ * Нижняя навигационная панель (Bottom Ribbon) - УЛУЧШЕННАЯ
  */
 .bottom-ribbon {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: var(--tg-secondary-bg-color);
-    border-top: 1px solid var(--tg-bg-color);
+    background: linear-gradient(135deg, var(--tg-secondary-bg-color) 0%, var(--tg-bg-color) 100%);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
     display: flex;
     justify-content: space-around;
-    padding: 5px;
+    padding: 8px 5px;
     box-sizing: border-box;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    box-shadow: var(--shadow-depth-3);
     z-index: 100;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    
+    /* Добавляем анимацию появления */
+    transform: translateY(100%);
+    animation: slideUpFromBottom var(--transition-duration-normal) var(--ease-out-expo) forwards;
 }
+
+/* Анимация появления нижней навигации */
+@keyframes slideUpFromBottom {
+    0% {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 .ribbon-button {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     flex: 1;
     max-width: 120px;
-    padding: 8px 0;
-    font-size: 12px;
+    padding: 12px 8px;
+    font-size: 11px;
     font-weight: 500;
     background-color: transparent;
     color: var(--tg-hint-color);
     border: none;
     cursor: pointer;
     border-radius: var(--radius-m);
-    transition: color 0.2s, background-color 0.2s;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
     text-align: center;
-    gap: 4px;
+    gap: 6px;
+    overflow: hidden;
+    
+    /* Добавляем поддержку для ripple эффекта */
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
 }
-.ribbon-button:hover,
-.ribbon-button.active {
-    background-color: var(--tg-bg-color);
+
+/* Ripple эффект для кнопок навигации */
+.ribbon-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--tg-link-color) 0%, transparent 70%);
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: all var(--transition-duration-fast) var(--ease-out-circ);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.ribbon-button:active::before {
+    width: 120px;
+    height: 120px;
+    opacity: 0.2;
+}
+
+/* Улучшенные состояния кнопок */
+.ribbon-button:hover {
+    background-color: rgba(0, 122, 255, 0.08);
     color: var(--tg-link-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-depth-1);
 }
+
+.ribbon-button.active {
+    background: linear-gradient(135deg, var(--tg-link-color) 0%, rgba(0, 122, 255, 0.8) 100%);
+    color: white;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: var(--shadow-depth-2);
+    
+    /* Добавляем внутреннее свечение */
+    box-shadow: 
+        var(--shadow-depth-2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3),
+        0 0 20px rgba(0, 122, 255, 0.3);
+}
+
+.ribbon-button:active {
+    transform: translateY(-1px) scale(0.98);
+    transition-duration: 0.1s;
+}
+
 .ribbon-button i {
     font-size: 20px;
     height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
 }
-/* Стили для активной кнопки в нижнем меню */
-.bottom-ribbon .ribbon-button.active {
-    color: var(--tg-button-color);
+
+.ribbon-button.active i {
+    transform: scale(1.1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Анимация для переключения активного состояния */
+.ribbon-button span {
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    opacity: 0.9;
+}
+
+.ribbon-button.active span {
+    opacity: 1;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Индикатор активного состояния */
+.ribbon-button::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, white, transparent);
+    border-radius: 2px;
+    transform: translateX(-50%);
+    transition: width var(--transition-duration-normal) var(--ease-out-expo);
+}
+
+.ribbon-button.active::after {
+    width: 60%;
+}
+
+/* Улучшенный фокус для доступности */
+.ribbon-button:focus-visible {
+    outline: 2px solid var(--tg-link-color);
+    outline-offset: 2px;
+    background-color: rgba(0, 122, 255, 0.1);
 }
 
 /*
@@ -965,39 +1453,182 @@ select:required option[value=""] {
     overflow: hidden;
     pointer-events: none; /* Не мешает кликам */
     transform: translateZ(0); /* Аппаратное ускорение */
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--tg-link-color) 50%, 
+        transparent 100%);
+    animation: progressSlide 1.5s ease-in-out infinite;
 }
 
-#top-progress-bar::before {
+@keyframes progressSlide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* УЛУЧШЕННЫЕ SKELETON LOADING СОСТОЯНИЯ */
+
+/* Базовый skeleton с современным шиммер эффектом */
+.skeleton-card,
+.card.skeleton {
+    background: linear-gradient(90deg, 
+        var(--tg-secondary-bg-color) 0%, 
+        rgba(0, 0, 0, 0.04) 50%, 
+        var(--tg-secondary-bg-color) 100%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.8s ease-in-out infinite;
+    border-radius: var(--radius-l);
+    height: 120px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-depth-1);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Более реалистичный skeleton с элементами */
+.skeleton-card-detailed {
+    background-color: var(--tg-secondary-bg-color);
+    border-radius: var(--radius-l);
+    height: 120px;
+    margin-bottom: 12px;
+    padding: 16px;
+    box-shadow: var(--shadow-depth-1);
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton-card-detailed::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--tg-button-color, #007aff); /* Цвет полосы */
-    animation: progress-animation 1.5s infinite linear;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.4) 50%, 
+        transparent 100%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 2s ease-in-out infinite;
+    z-index: 1;
 }
 
-@keyframes progress-animation {
+/* Элементы внутри skeleton */
+.skeleton-line {
+    height: 12px;
+    background-color: rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.skeleton-line.title {
+    width: 70%;
+    height: 16px;
+    margin-bottom: 12px;
+}
+
+.skeleton-line.subtitle {
+    width: 50%;
+    height: 12px;
+}
+
+.skeleton-line.badge {
+    width: 80px;
+    height: 20px;
+    border-radius: 10px;
+    float: right;
+    margin-top: -20px;
+}
+
+/* Анимации */
+@keyframes skeletonShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Контейнер для skeleton loading */
+.skeleton-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 15px;
+    opacity: 0;
+    animation: fadeInUp var(--transition-duration-normal) var(--ease-ultra-smooth) forwards;
+}
+
+/* Плавный переход от skeleton к контенту */
+.content-replacing {
+    animation: contentReplace var(--transition-duration-normal) var(--ease-ultra-smooth) forwards;
+}
+
+@keyframes contentReplace {
     0% {
-        transform: translateX(-100%) scaleX(0.5);
-    }
-    50% {
-        transform: translateX(0%) scaleX(1);
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+        filter: var(--blur-light);
     }
     100% {
-        transform: translateX(100%) scaleX(0.5);
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: none;
     }
 }
 
-/* Стили для скелетного загрузчика */
-.card.skeleton {
-    height: 140px;
-    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    background-color: var(--tg-bg-color);
+/* Skeleton для панели заголовка */
+.skeleton-header {
+    height: 24px;
+    width: 150px;
+    background: linear-gradient(90deg, 
+        rgba(0, 0, 0, 0.08) 0%, 
+        rgba(0, 0, 0, 0.12) 50%, 
+        rgba(0, 0, 0, 0.08) 100%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.8s ease-in-out infinite;
+    border-radius: 12px;
+    margin: 20px auto;
 }
-@keyframes pulse {
-    50% { opacity: .7; }
+
+/* Улучшенный прогресс бар с градиентом */
+#top-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, 
+        var(--tg-link-color) 0%,
+        rgba(0, 122, 255, 0.8) 50%,
+        var(--tg-link-color) 100%);
+    background-size: 200% 100%;
+    z-index: 9999;
+    overflow: hidden;
+    pointer-events: none;
+    transform: translateZ(0);
+    animation: progressSlideSmooth 1.8s ease-in-out infinite;
+    opacity: 0;
+    transition: opacity var(--transition-duration-fast) var(--ease-smooth);
+}
+
+#top-progress-bar:not(.hidden) {
+    opacity: 1;
+}
+
+@keyframes progressSlideSmooth {
+    0% { 
+        transform: translateX(-100%); 
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        filter: hue-rotate(30deg);
+    }
+    100% { 
+        transform: translateX(100%); 
+        filter: hue-rotate(0deg);
+    }
 }
 
 /*
@@ -1007,6 +1638,11 @@ select:required option[value=""] {
     text-align: center;
     padding: 40px 20px;
     color: var(--tg-hint-color);
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 .empty-state-icon {
     font-size: 48px;
@@ -1118,24 +1754,39 @@ select:required option[value=""] {
     z-index: 330;
     padding: 0;
     margin: 0;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    width: auto;
-    height: auto;
+    background: linear-gradient(135deg, var(--tg-link-color) 0%, rgba(0, 122, 255, 0.8) 100%);
+    border: none;
+    border-radius: 50%;
+    box-shadow: var(--shadow-depth-3);
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    
+    /* Пульсирующая анимация для привлечения внимания */
+    animation: fabPulse 2s infinite;
 }
-.fab-create-order span#fab-plus-lottie {
-    display: block;
-    width: 60px !important;
-    height: 60px !important;
-    pointer-events: none;
+
+@keyframes fabPulse {
+    0%, 100% {
+        box-shadow: var(--shadow-depth-3), 0 0 0 0 rgba(0, 122, 255, 0.4);
+    }
+    50% {
+        box-shadow: var(--shadow-depth-4), 0 0 0 10px rgba(0, 122, 255, 0);
+    }
 }
+
+.fab-create-order:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: var(--shadow-depth-4);
+    animation: none; /* Останавливаем пульсацию при hover */
+}
+
 .fab-create-order:active {
-    background: transparent !important;
+    transform: translateY(-1px) scale(1.05);
 }
 
 /*
@@ -1176,6 +1827,8 @@ select:required option[value=""] {
     box-sizing: border-box;
     transform: translateY(100%);
     transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    min-height: 200px;
+    will-change: transform;
 }
 
 .modal-window h2 {
@@ -1309,90 +1962,450 @@ select:required option[value=""] {
     z-index: 330;
     padding: 0;
     margin: 0;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-    width: auto;
-    height: auto;
+    background: linear-gradient(135deg, var(--tg-link-color) 0%, rgba(0, 122, 255, 0.8) 100%);
+    border: none;
+    border-radius: 50%;
+    box-shadow: var(--shadow-depth-3);
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    
+    /* Пульсирующая анимация для привлечения внимания */
+    animation: fabPulse 2s infinite;
 }
 
-#fab-create-staff span {
-    display: block;
-    width: 60px !important;
-    height: 60px !important;
+@keyframes fabPulse {
+    0%, 100% {
+        box-shadow: var(--shadow-depth-3), 0 0 0 0 rgba(0, 122, 255, 0.4);
+    }
+    50% {
+        box-shadow: var(--shadow-depth-4), 0 0 0 10px rgba(0, 122, 255, 0);
+    }
+}
+
+.fab-create-staff:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: var(--shadow-depth-4);
+    animation: none; /* Останавливаем пульсацию при hover */
+}
+
+.fab-create-staff:active {
+    transform: translateY(-1px) scale(1.05);
+}
+
+/*
+ * УЛУЧШЕННЫЕ ПОЛЯ ВВОДА И ПОИСКА
+ */
+.search-input-wrapper {
+    position: relative;
+    margin-bottom: 20px;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+}
+
+.search-input-wrapper:focus-within {
+    transform: translateY(-2px);
+}
+
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="email"] {
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    border: 2px solid transparent;
+}
+
+input[type="search"]:focus,
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="email"]:focus {
+    border-color: var(--tg-link-color);
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+    transform: scale(1.02);
+}
+
+/*
+ * УЛУЧШЕННЫЕ КАРТОЧКИ И СПИСКИ
+ */
+
+/* Базовые анимации для карточек */
+.card {
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all var(--transition-duration-normal) var(--ease-out-expo);
+    
+    /* Улучшенные тени и hover эффекты */
+    box-shadow: var(--shadow-depth-1);
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    background: var(--tg-secondary-bg-color);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Анимация появления карточек */
+.card.animate-in {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* Стагерная анимация для списков */
+.card:nth-child(1) { animation-delay: 0ms; }
+.card:nth-child(2) { animation-delay: 100ms; }
+.card:nth-child(3) { animation-delay: 200ms; }
+.card:nth-child(4) { animation-delay: 300ms; }
+.card:nth-child(5) { animation-delay: 400ms; }
+.card:nth-child(6) { animation-delay: 500ms; }
+.card:nth-child(7) { animation-delay: 600ms; }
+.card:nth-child(8) { animation-delay: 700ms; }
+.card:nth-child(9) { animation-delay: 800ms; }
+.card:nth-child(10) { animation-delay: 900ms; }
+
+/* УЛЬТРА-УЛУЧШЕННЫЕ HOVER И MICRO-INTERACTIONS */
+
+/* Улучшенные hover эффекты для карточек */
+.card {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(0, 122, 255, 0.05) 50%, 
+        transparent 100%);
+    transition: left var(--transition-duration-slow) var(--ease-elegant);
+    z-index: 1;
     pointer-events: none;
 }
 
-.staff-categories {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding-top: 10px;
-    padding-left: 15px;
-    padding-right: 15px;
+.card:hover::before {
+    left: 100%;
 }
 
-.role-category-btn {
-    display: flex;
-    align-items: center;
+.card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: var(--shadow-depth-4);
+    border-color: rgba(0, 122, 255, 0.3);
+    
+    /* Добавляем subtle glow эффект */
+    box-shadow: 
+        var(--shadow-depth-4),
+        0 0 20px rgba(0, 122, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.card:active {
+    transform: translateY(-3px) scale(1.01);
+    transition-duration: 0.1s;
+    box-shadow: var(--shadow-depth-2);
+}
+
+/* Улучшенные состояния для интерактивных элементов */
+.card .card-header,
+.card .card-body {
+    position: relative;
+    z-index: 2;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+}
+
+.card:hover .card-header {
+    transform: translateY(-1px);
+}
+
+.card:hover .order-status-badge {
+    transform: scale(1.05);
+    filter: brightness(1.1) saturate(1.1);
+}
+
+/* Ripple эффект для кнопок */
+.button-primary,
+.button-success,
+.button-danger,
+.button-warning {
+    position: relative;
+    overflow: hidden;
+}
+
+.button-primary::after,
+.button-success::after,
+.button-danger::after,
+.button-warning::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: all var(--transition-duration-normal) var(--ease-out-circ);
+    pointer-events: none;
+    opacity: 0;
+}
+
+.button-primary:active::after,
+.button-success:active::after,
+.button-danger:active::after,
+.button-warning:active::after {
+    width: 300px;
+    height: 300px;
+    opacity: 1;
+    transition: all 0.8s var(--ease-out-circ);
+}
+
+/* Стилизованный focus для доступности */
+.card:focus-visible,
+.button-primary:focus-visible,
+.button-success:focus-visible,
+.button-danger:focus-visible,
+.button-warning:focus-visible {
+    outline: 2px solid var(--tg-link-color);
+    outline-offset: 2px;
+    box-shadow: 
+        var(--shadow-depth-3),
+        0 0 0 4px rgba(0, 122, 255, 0.2);
+}
+
+/* Улучшенные micro-animations для иконок */
+.fa-solid,
+.fa-regular {
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+}
+
+.card:hover .fa-solid,
+.card:hover .fa-regular {
+    transform: scale(1.1);
+    filter: brightness(1.2);
+}
+
+/* Анимация для floating action buttons */
+.fab-create-order,
+#fab-create-staff {
+    position: relative;
+}
+
+.fab-create-order::before,
+#fab-create-staff::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
     width: 100%;
-    text-align: left;
-    padding: 16px;
-    background-color: var(--tg-secondary-bg-color);
+    height: 100%;
+    border-radius: 50%;
+    background: inherit;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform var(--transition-duration-fast) var(--ease-anticipate);
+    z-index: -1;
+    opacity: 0.3;
+}
+
+.fab-create-order:hover::before,
+#fab-create-staff:hover::before {
+    transform: translate(-50%, -50%) scale(1.3);
+}
+
+/* Улучшенная анимация для пустых состояний */
+.empty-state-icon {
+    transition: all var(--transition-duration-normal) var(--ease-smooth);
+}
+
+.empty-state:hover .empty-state-icon {
+    transform: scale(1.05) rotate(5deg);
+}
+
+/* Плавная анимация для переключения табов */
+.ribbon-button {
+    position: relative;
+}
+
+.ribbon-button::before {
+    transition: all var(--transition-duration-normal) var(--ease-elegant);
+}
+
+.ribbon-button:not(.active):hover {
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* Improved loading spinner */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(0, 122, 255, 0.1);
+    border-top: 3px solid var(--tg-link-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite, pulse 2s ease-in-out infinite alternate;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Smooth scroll improvements */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Enhanced scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 122, 255, 0.3);
+    border-radius: 3px;
+    transition: background var(--transition-duration-fast) var(--ease-smooth);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 122, 255, 0.5);
+}
+
+/* Анимация для появления карточек при загрузке */
+@keyframes cardSlideIn {
+    0% {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.card.slide-in {
+    animation: cardSlideIn var(--transition-duration-normal) var(--ease-out-expo) forwards;
+}
+
+/*
+ * УЛУЧШЕННЫЕ ЭЛЕМЕНТЫ НАВИГАЦИИ
+ */
+
+/* Кнопка "Назад" */
+.back-button {
+    background: none;
     border: none;
-    border-radius: var(--radius-m);
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--tg-text-color);
+    font-size: 28px;
+    color: var(--tg-hint-color);
     cursor: pointer;
-    transition: background-color 0.2s ease;
-    box-shadow: var(--shadow-soft);
-}
-
-.role-category-btn:hover {
-    background-color: var(--tg-bg-color);
-}
-
-.role-category-btn > i:first-child {
-    font-size: 20px;
-    color: var(--tg-link-color);
-    margin-right: 16px;
-    width: 24px;
-    text-align: center;
-}
-
-.role-category-btn span {
-    flex-grow: 1;
-}
-
-.role-category-btn > i:last-child {
-    font-size: 14px;
-    color: var(--tg-hint-color);
-}
-
-.staff-card .card-body {
-    flex-direction: row;
-    justify-content: space-between;
+    padding: 8px;
+    border-radius: 50%;
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    width: 40px;
+    height: 40px;
+    display: flex;
     align-items: center;
+    justify-content: center;
 }
 
-.staff-name {
-    font-weight: 600;
-}
-.staff-phone {
-    color: var(--tg-hint-color);
-    font-size: 0.9em;
-    display: block;
+.back-button:hover {
+    background-color: rgba(0, 122, 255, 0.1);
+    color: var(--tg-link-color);
+    transform: translateY(-50%) scale(1.1);
 }
 
-.swipe-indicator {
-    color: var(--tg-hint-color);
-    opacity: 0.6;
-    font-size: 14px;
+.back-button:active {
+    transform: translateY(-50%) scale(0.95);
+    background-color: rgba(0, 122, 255, 0.2);
+}
+
+/*
+ * FLOATING ACTION BUTTON УЛУЧШЕНИЯ
+ */
+.fab-create-order,
+#fab-create-staff {
+    position: fixed;
+    right: 28px;
+    bottom: 88px;
+    z-index: 330;
+    padding: 0;
+    margin: 0;
+    background: linear-gradient(135deg, var(--tg-link-color) 0%, rgba(0, 122, 255, 0.8) 100%);
+    border: none;
+    border-radius: 50%;
+    box-shadow: var(--shadow-depth-3);
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    
+    /* Пульсирующая анимация для привлечения внимания */
+    animation: fabPulse 2s infinite;
+}
+
+@keyframes fabPulse {
+    0%, 100% {
+        box-shadow: var(--shadow-depth-3), 0 0 0 0 rgba(0, 122, 255, 0.4);
+    }
+    50% {
+        box-shadow: var(--shadow-depth-4), 0 0 0 10px rgba(0, 122, 255, 0);
+    }
+}
+
+.fab-create-order:hover,
+#fab-create-staff:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: var(--shadow-depth-4);
+    animation: none; /* Останавливаем пульсацию при hover */
+}
+
+.fab-create-order:active,
+#fab-create-staff:active {
+    transform: translateY(-1px) scale(1.05);
+}
+
+/*
+ * УЛУЧШЕННЫЕ ПОЛЯ ВВОДА И ПОИСКА
+ */
+.search-input-wrapper {
+    position: relative;
+    margin-bottom: 20px;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+}
+
+.search-input-wrapper:focus-within {
+    transform: translateY(-2px);
+}
+
+input[type="search"],
+input[type="text"],
+input[type="tel"],
+input[type="email"] {
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    border: 2px solid transparent;
+}
+
+input[type="search"]:focus,
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="email"]:focus {
+    border-color: var(--tg-link-color);
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+    transform: scale(1.02);
 }
 
 /*
@@ -1790,4 +2803,427 @@ select:required option[value=""] {
 .client-actions button {
     flex: 1 1 160px; /* Кнопки растягиваются, но не становятся меньше 160px */
     margin: 0;
+}
+
+/* 
+ * ВОССТАНОВЛЕНИЕ ЦВЕТОВ КНОПОК И ФИНАЛЬНЫЕ УЛУЧШЕНИЯ
+ */
+
+.button-primary {
+    background-color: var(--tg-button-color);
+    color: var(--tg-button-text-color);
+}
+
+.button-success {
+    background-color: var(--button-success-color);
+    color: var(--tg-button-text-color);
+}
+
+.button-danger {
+    background-color: var(--button-danger-color);
+    color: var(--tg-button-text-color);
+}
+
+.button-warning {
+    background-color: var(--status-progress);
+    color: var(--tg-button-text-color);
+}
+
+/*
+ * УЛУЧШЕННЫЕ СОСТОЯНИЯ ЗАГРУЗКИ
+ */
+
+/* Красивый скелетон для карточек */
+.skeleton-card {
+    background: linear-gradient(90deg, 
+        var(--tg-secondary-bg-color) 0%, 
+        rgba(0, 0, 0, 0.04) 50%, 
+        var(--tg-secondary-bg-color) 100%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+    border-radius: var(--radius-l);
+    height: 80px;
+    margin-bottom: 12px;
+}
+
+@keyframes skeletonShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Улучшенная загрузка для списков */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    opacity: 0;
+    animation: fadeInUp var(--transition-duration-normal) var(--ease-out-expo) forwards;
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Улучшенный прогресс-бар */
+#top-progress-bar {
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        var(--tg-link-color) 50%, 
+        transparent 100%);
+    animation: progressSlide 1.5s ease-in-out infinite;
+}
+
+@keyframes progressSlide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/*
+ * ВОССТАНОВЛЕНИЕ СТИЛЕЙ ШТАТА
+ */
+.staff-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.role-category-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    padding: 16px;
+    background-color: var(--tg-secondary-bg-color);
+    border: none;
+    border-radius: var(--radius-m);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--tg-text-color);
+    cursor: pointer;
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+    box-shadow: var(--shadow-depth-1);
+    
+    /* Добавляем эффект нажатия */
+    transform: translateY(0);
+}
+
+.role-category-btn:hover {
+    background-color: var(--tg-bg-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-depth-2);
+}
+
+.role-category-btn:active {
+    transform: translateY(0);
+}
+
+.role-category-btn > i:first-child {
+    font-size: 20px;
+    color: var(--tg-link-color);
+    margin-right: 16px;
+    width: 24px;
+    text-align: center;
+}
+
+.role-category-btn span {
+    flex-grow: 1;
+}
+
+.role-category-btn > i:last-child {
+    font-size: 14px;
+    color: var(--tg-hint-color);
+}
+
+.staff-card .card-body {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.staff-name {
+    font-weight: 600;
+}
+
+.staff-phone {
+    color: var(--tg-hint-color);
+    font-size: 0.9em;
+    display: block;
+}
+
+.swipe-indicator {
+    color: var(--tg-hint-color);
+    opacity: 0.6;
+    font-size: 14px;
+}
+
+/* Восстановление стилей FAB */
+.fab-create-order span#fab-plus-lottie,
+#fab-create-staff span {
+    display: block;
+    width: 40px !important;
+    height: 40px !important;
+    pointer-events: none;
+}
+
+/*
+ * ДОПОЛНИТЕЛЬНЫЕ АНИМАЦИИ ДЛЯ ПЛАВНОСТИ
+ */
+
+/* Анимация для пустых состояний */
+.empty-state {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: emptyStateAppear var(--transition-duration-slow) var(--ease-out-expo) forwards;
+}
+
+@keyframes emptyStateAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Анимация для модальных окон */
+.modal-overlay {
+    backdrop-filter: blur(0px);
+    transition: backdrop-filter var(--transition-duration-normal) var(--ease-smooth);
+}
+
+.modal-overlay:not(.hidden) {
+    backdrop-filter: blur(8px);
+}
+
+.modal-window {
+    transform: translateY(100%) scale(0.9);
+    transition: all var(--transition-duration-normal) var(--ease-out-expo);
+}
+
+.modal-overlay:not(.hidden) .modal-window {
+    transform: translateY(0) scale(1);
+}
+
+/* Улучшенные переходы для Swiper */
+.swiper-slide {
+    transition: all var(--transition-duration-fast) var(--ease-smooth);
+}
+
+.swiper-slide-active {
+    transform: scale(1);
+}
+
+.swiper-slide:not(.swiper-slide-active) {
+    transform: scale(0.95);
+    opacity: 0.7;
+}
+
+/*
+ * =====================================================================
+ * СТАБИЛИЗАЦИЯ LAYOUT - ПРЕДОТВРАЩЕНИЕ LAYOUT SHIFT
+ * =====================================================================
+ */
+
+/* Минимальные высоты для основных контейнеров */
+.content-list {
+    min-height: 200px; /* Предотвращает collapse при пустом списке */
+    transition: min-height var(--transition-duration-normal) var(--ease-smooth);
+}
+
+.panel-header {
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.search-container {
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+}
+
+/* Placeholder для содержимого во время загрузки */
+.content-placeholder {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeInUp var(--transition-duration-normal) var(--ease-ultra-smooth) forwards;
+}
+
+/* Стабильные размеры для карточек */
+.card {
+    min-height: 100px;
+    contain: layout style; /* CSS containment для лучшей производительности */
+}
+
+.skeleton-card,
+.skeleton-card-detailed {
+    height: 120px; /* Фиксированная высота для предсказуемости */
+    min-height: 120px;
+}
+
+/* Предотвращение layout shift для изображений и медиа */
+.media-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: var(--tg-bg-color); /* Placeholder цвет */
+}
+
+/* Стабилизация для модальных окон */
+.modal-window {
+    min-height: 200px;
+    max-height: 90vh;
+    will-change: transform;
+}
+
+/* Улучшенная стабилизация для Swiper */
+.swiper-container {
+    min-height: 50px;
+}
+
+.swiper-slide {
+    height: auto;
+    min-height: inherit;
+}
+
+/* Резервируем место для FAB кнопок */
+body {
+    padding-bottom: 100px; /* Место для нижней панели + FAB */
+}
+
+.panel {
+    padding-bottom: 120px; /* Увеличиваем нижний отступ */
+}
+
+/* Стабилизация для пустых состояний */
+.empty-state {
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Устраняем CLS (Cumulative Layout Shift) */
+.panel-content,
+.content-list,
+.empty-state,
+.skeleton-container {
+    contain: layout style paint;
+}
+
+/*
+ * =====================================================================
+ * ФИНАЛЬНЫЕ ОПТИМИЗАЦИИ ПРОИЗВОДИТЕЛЬНОСТИ
+ * =====================================================================
+ */
+
+/* GPU acceleration для ключевых элементов */
+.panel,
+.card,
+.modal-overlay,
+.fullscreen-media-overlay,
+.fab-create-order,
+#fab-create-staff,
+.bottom-ribbon {
+    will-change: transform;
+    transform: translateZ(0); /* Принуждаем к композитному слою */
+}
+
+/* Оптимизация перерисовки */
+.panel-header,
+.search-container,
+.content-list {
+    contain: layout style;
+}
+
+/* Reduced motion для пользователей с предпочтениями доступности */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .card::before,
+    .button-primary::after,
+    .button-success::after,
+    .button-danger::after,
+    .button-warning::after {
+        display: none;
+    }
+}
+
+/* Оптимизации для старых браузеров */
+.panel {
+    -webkit-transform: translateZ(0);
+    -moz-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
+/* Улучшенная типографика для лучшей читаемости */
+.card-header,
+.card-body,
+.panel-header h2 {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Critical rendering path optimization */
+.above-fold-content {
+    contain: layout style paint;
+    will-change: contents;
+}
+
+/* Финальная CSS оптимизация */
+* {
+    box-sizing: border-box;
+}
+
+*:focus {
+    outline-offset: 2px;
+}
+
+/* Улучшенная поддержка темной темы */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --tg-bg-color: #1a1a1a;
+        --tg-secondary-bg-color: #2a2a2a;
+        --shadow-depth-1: 0 1px 3px rgba(255, 255, 255, 0.1), 0 1px 2px rgba(255, 255, 255, 0.06);
+        --shadow-depth-2: 0 3px 6px rgba(255, 255, 255, 0.12), 0 3px 6px rgba(255, 255, 255, 0.08);
+        --shadow-depth-3: 0 10px 20px rgba(255, 255, 255, 0.15), 0 6px 6px rgba(255, 255, 255, 0.1);
+        --shadow-depth-4: 0 14px 28px rgba(255, 255, 255, 0.18), 0 10px 10px rgba(255, 255, 255, 0.12);
+    }
+}
+
+/* Финальная оптимизация для мобильных устройств */
+@media (max-width: 768px) {
+    .card:hover {
+        transform: translateY(-3px) scale(1.01); /* Уменьшаем hover эффект на мобильных */
+    }
+    
+    .transition-duration-slow {
+        --transition-duration-slow: 0.5s; /* Быстрее на мобильных */
+    }
 }

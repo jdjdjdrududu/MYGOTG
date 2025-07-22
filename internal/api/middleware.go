@@ -22,6 +22,12 @@ import (
 // UserContextKey - ключ для сохранения данных пользователя в контексте запроса.
 var UserContextKey = &contextKey{"User"}
 
+// BotContextKey - ключ для сохранения бота в контексте запроса.
+var BotContextKey = &contextKey{"Bot"}
+
+// ConfigContextKey - ключ для сохранения конфига в контексте запроса.
+var ConfigContextKey = &contextKey{"Config"}
+
 type contextKey struct {
 	name string
 }
@@ -75,6 +81,26 @@ func RoleMiddleware(requiredRole string) func(http.Handler) http.Handler {
 			}
 
 			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+// BotMiddleware добавляет бота в контекст запроса.
+func BotMiddleware(bot interface{}) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(r.Context(), BotContextKey, bot)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+// ConfigMiddleware добавляет конфиг в контекст запроса.
+func ConfigMiddleware(cfg interface{}) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx := context.WithValue(r.Context(), ConfigContextKey, cfg)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
