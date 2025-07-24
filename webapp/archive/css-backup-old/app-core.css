@@ -1,0 +1,322 @@
+/* === CORE APP STYLES === */
+
+/* Main App Structure */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.content-panels {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Loading Screen */
+.loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: var(--tg-bg-color, #f7f8fa);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-screen .loader {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--tg-hint-color, #707579);
+    border-top: 4px solid var(--tg-link-color, #007aff);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+.loading-screen p {
+    color: var(--tg-text-color, #000);
+    font-size: 16px;
+    margin: 0;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error Screen */
+.error-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: var(--tg-bg-color, #f7f8fa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+}
+
+.error-content {
+    text-align: center;
+    padding: 40px;
+    max-width: 400px;
+}
+
+.error-content i {
+    font-size: 64px;
+    color: #ff3b30;
+    margin-bottom: 20px;
+}
+
+.error-content h2 {
+    color: var(--tg-text-color, #000);
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.error-content p {
+    color: var(--tg-hint-color, #707579);
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.retry-button {
+    background: var(--tg-button-color, #007aff);
+    color: var(--tg-button-text-color, #fff);
+    border: none;
+    padding: 12px 24px;
+    border-radius: var(--radius-s, 8px);
+    font-size: 16px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.retry-button:hover {
+    opacity: 0.8;
+}
+
+/* Panel System */
+.panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    overflow-y: auto;
+    background: var(--tg-bg-color, #f7f8fa);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s ease;
+}
+
+.panel.active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.panel.hidden {
+    display: none;
+}
+
+/* Navigation */
+.app-navigation {
+    display: flex;
+    background: var(--tg-secondary-bg-color, #fff);
+    border-top: 1px solid var(--form-field-border-color, #e6e6e6);
+    padding: 8px 0;
+    min-height: 64px;
+    z-index: 100;
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    background: none;
+    border: none;
+    color: var(--tg-hint-color, #707579);
+    text-decoration: none;
+    transition: color 0.2s;
+    cursor: pointer;
+    font-size: 10px;
+    line-height: 1.2;
+}
+
+.nav-item.active {
+    color: var(--tg-link-color, #007aff);
+}
+
+.nav-item i {
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+
+.nav-item span {
+    font-size: 10px;
+    font-weight: 400;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}
+
+/* Cards */
+.card {
+    background: var(--tg-secondary-bg-color, #fff);
+    border-radius: var(--radius-m, 14px);
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-soft, 0 4px 12px rgba(0, 0, 0, 0.08));
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--tg-text-color, #000);
+    margin: 0;
+}
+
+.card-content {
+    color: var(--tg-text-color, #000);
+    line-height: 1.4;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: var(--radius-s, 8px);
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.new {
+    background: var(--status-new, #007aff);
+    color: white;
+}
+
+.status-badge.in-progress {
+    background: var(--status-progress, #ff9500);
+    color: white;
+}
+
+.status-badge.completed {
+    background: var(--status-completed, #34c759);
+    color: white;
+}
+
+.status-badge.canceled {
+    background: var(--status-canceled, #ff3b30);
+    color: white;
+}
+
+.status-badge.awaiting {
+    background: var(--status-awaiting, #ffcc00);
+    color: #000;
+}
+
+/* Profile Card */
+.profile-card {
+    background: var(--tg-secondary-bg-color, #fff);
+    border-radius: var(--radius-l, 22px);
+    padding: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-strong, 0 8px 30px rgba(0, 0, 0, 0.18));
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--tg-link-color, #007aff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    color: white;
+    font-size: 32px;
+}
+
+.profile-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--tg-text-color, #000);
+    margin-bottom: 4px;
+}
+
+.profile-role {
+    font-size: 14px;
+    color: var(--tg-hint-color, #707579);
+    margin-bottom: 8px;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--tg-hint-color, #707579);
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--tg-text-color, #000);
+}
+
+.empty-state p {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .panel {
+        padding: 16px;
+    }
+    
+    .card {
+        padding: 12px;
+    }
+    
+    .profile-card {
+        padding: 20px;
+    }
+} 

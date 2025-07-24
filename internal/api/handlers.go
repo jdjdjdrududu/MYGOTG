@@ -192,8 +192,45 @@ func GetUserProfile(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusInternalServerError, "User context not found")
 		return
 	}
-	user.CardNumber.String = ""
-	writeJSONSuccess(w, "Profile retrieved successfully", user)
+
+	// Создаем структуру для корректного отображения в JSON
+	type UserResponse struct {
+		ID          int64  `json:"ID"`
+		ChatID      int64  `json:"ChatID"`
+		Role        string `json:"Role"`
+		FirstName   string `json:"FirstName"`
+		LastName    string `json:"LastName"`
+		Nickname    string `json:"Nickname,omitempty"`
+		Phone       string `json:"Phone,omitempty"`
+		CardNumber  string `json:"CardNumber,omitempty"`
+		IsBlocked   bool   `json:"IsBlocked"`
+		BlockReason string `json:"BlockReason,omitempty"`
+	}
+
+	response := UserResponse{
+		ID:        user.ID,
+		ChatID:    user.ChatID,
+		Role:      user.Role,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		IsBlocked: user.IsBlocked,
+	}
+
+	if user.Nickname.Valid {
+		response.Nickname = user.Nickname.String
+	}
+
+	if user.Phone.Valid {
+		response.Phone = user.Phone.String
+	}
+
+	if user.BlockReason.Valid {
+		response.BlockReason = user.BlockReason.String
+	}
+
+	// Карту не возвращаем для безопасности
+
+	writeJSONSuccess(w, "Profile retrieved successfully", response)
 }
 
 // GetOrders возвращает список заказов в зависимости от GET-параметра status.
@@ -364,8 +401,48 @@ func GetClientDetails(w http.ResponseWriter, r *http.Request) {
 		recentOrders = recentOrders[:5]
 	}
 
-	response := ClientDetailsResponse{
-		User:       user,
+	// Создаем структуру пользователя для корректного отображения в JSON
+	type ClientUser struct {
+		ID          int64  `json:"ID"`
+		ChatID      int64  `json:"ChatID"`
+		Role        string `json:"Role"`
+		FirstName   string `json:"FirstName"`
+		LastName    string `json:"LastName"`
+		Nickname    string `json:"Nickname,omitempty"`
+		Phone       string `json:"Phone,omitempty"`
+		IsBlocked   bool   `json:"IsBlocked"`
+		BlockReason string `json:"BlockReason,omitempty"`
+	}
+
+	clientUser := ClientUser{
+		ID:        user.ID,
+		ChatID:    user.ChatID,
+		Role:      user.Role,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		IsBlocked: user.IsBlocked,
+	}
+
+	if user.Nickname.Valid {
+		clientUser.Nickname = user.Nickname.String
+	}
+
+	if user.Phone.Valid {
+		clientUser.Phone = user.Phone.String
+	}
+
+	if user.BlockReason.Valid {
+		clientUser.BlockReason = user.BlockReason.String
+	}
+
+	type FixedClientDetailsResponse struct {
+		User       ClientUser     `json:"User"`
+		OrderCount int            `json:"order_count"`
+		Orders     []models.Order `json:"orders"`
+	}
+
+	response := FixedClientDetailsResponse{
+		User:       clientUser,
 		OrderCount: orderCount,
 		Orders:     recentOrders,
 	}
@@ -522,7 +599,7 @@ func HandleAdminOrderAction(w http.ResponseWriter, r *http.Request) {
 				msg.ParseMode = tgbotapi.ModeMarkdown
 
 				// URL вашего Web App. Можно вынести в конфиг.
-				webAppURL := "https://xn----ctbinlmxece7i.xn--p1ai/webapp/"
+				webAppURL := "https://xn----ctbinlmxece7i.xn--p1ai/webapp/mini-app-fix.html"
 
 				// Создаем кнопку WebApp
 				webAppButton := tgbotapi.NewInlineKeyboardButtonWebApp(
@@ -1038,16 +1115,22 @@ func CreateUserOrder(w http.ResponseWriter, r *http.Request) {
 func GetTestUserProfile(w http.ResponseWriter, r *http.Request) {
 	log.Println("⚠️ ТЕСТОВЫЙ ЗАПРОС: Используется временный тестовый профиль пользователя")
 
-	// Создаем тестового пользователя
+	// Создаем тестового пользователя с полными данными
 	testUser := map[string]interface{}{
-		"ID":        999999,
-		"Role":      "operator",
-		"FirstName": "Тестовый",
-		"LastName":  "Пользователь",
-		"Nickname":  "testuser",
-		"ChatID":    999999,
-		"Phone":     "+7999999999",
-		"IsBlocked": false,
+		"ID":             1,
+		"ChatID":         1263060321,
+		"Role":           "operator",
+		"FirstName":      "Александр",
+		"LastName":       "Иванов",
+		"Nickname":       "alex_operator",
+		"Username":       "alex_operator",
+		"Phone":          "+79781234567",
+		"IsBlocked":      false,
+		"CreatedAt":      "2024-07-01T10:00:00Z",
+		"UpdatedAt":      "2024-07-23T15:00:00Z",
+		"OrderCount":     42,
+		"ActiveCount":    5,
+		"CompletedCount": 37,
 	}
 
 	writeJSONSuccess(w, "Test profile retrieved successfully", testUser)

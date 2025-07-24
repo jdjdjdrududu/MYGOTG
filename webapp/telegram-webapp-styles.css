@@ -1,0 +1,211 @@
+/*
+ * Telegram WebApp Override Styles
+ * Эти стили имеют высокий приоритет для корректного отображения в Telegram
+ */
+
+/* Переопределяем базовые стили Telegram */
+body {
+    background: var(--tg-theme-bg-color, #1a1a1a) !important;
+    color: var(--tg-theme-text-color, #ffffff) !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+/* Убираем отступы, которые может добавлять Telegram */
+#main-content {
+    padding-bottom: 80px !important; /* Место для нижней навигации */
+}
+
+/* Исправляем карточки для темной темы */
+.order-card,
+.client-card,
+.profile-card,
+.card {
+    background: var(--tg-theme-secondary-bg-color, #2a2a2a) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: var(--tg-theme-text-color, #ffffff) !important;
+}
+
+/* Исправляем нижнюю навигацию */
+.bottom-nav {
+    background: var(--tg-theme-secondary-bg-color, #2a2a2a) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+}
+
+.bottom-nav .nav-item {
+    color: var(--tg-theme-hint-color, #8E8E93) !important;
+    font-weight: 500 !important;
+}
+
+.bottom-nav .nav-item.active {
+    color: var(--tg-theme-button-color, #007aff) !important;
+}
+
+.bottom-nav .nav-item:active {
+    transform: scale(0.95) !important;
+}
+
+/* Статусы заказов с правильными цветами */
+.order-status,
+.status-badge {
+    font-weight: 600 !important;
+    padding: 6px 16px !important;
+    border-radius: 20px !important;
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.status-new {
+    background: rgba(0, 122, 255, 0.15) !important;
+    color: #007aff !important;
+}
+
+.status-active,
+.status-in_progress {
+    background: rgba(255, 149, 0, 0.15) !important;
+    color: #ff9500 !important;
+}
+
+.status-completed {
+    background: rgba(52, 199, 89, 0.15) !important;
+    color: #34c759 !important;
+}
+
+/* Кнопки клиентов - используем правильные цвета для статусов */
+.client-card .status-badge {
+    padding: 8px 20px !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    text-transform: none !important;
+}
+
+/* Статусы клиентов с правильными цветами */
+.client-card .status-badge.active {
+    background: rgba(52, 199, 89, 0.15) !important;
+    color: #34c759 !important;
+}
+
+.client-card .status-badge.blocked {
+    background: rgba(255, 59, 48, 0.15) !important;
+    color: #ff3b30 !important;
+}
+
+/* Поля поиска */
+.search-input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: var(--tg-theme-text-color, #ffffff) !important;
+}
+
+.search-input::placeholder {
+    color: var(--tg-theme-hint-color, #8E8E93) !important;
+}
+
+/* Профиль */
+.profile-header {
+    text-align: center !important;
+    padding: 24px !important;
+}
+
+.profile-header .avatar {
+    width: 80px !important;
+    height: 80px !important;
+    background: var(--tg-theme-button-color, #007aff) !important;
+    color: white !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 32px !important;
+    font-weight: 600 !important;
+    margin: 0 auto 16px !important;
+}
+
+.profile-info {
+    padding: 0 24px 24px !important;
+}
+
+.info-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 12px 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.info-row:last-child {
+    border-bottom: none !important;
+}
+
+.info-row .label {
+    color: var(--tg-theme-hint-color, #8E8E93) !important;
+    font-size: 14px !important;
+}
+
+.info-row .value {
+    color: var(--tg-theme-text-color, #ffffff) !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+/* Роль в профиле */
+.role-badge {
+    display: inline-block !important;
+    padding: 6px 16px !important;
+    border-radius: 20px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    margin-top: 8px !important;
+}
+
+.role-badge.owner {
+    background: rgba(142, 36, 170, 0.15) !important;
+    color: #8e24aa !important;
+}
+
+.role-badge.operator {
+    background: rgba(0, 122, 255, 0.15) !important;
+    color: #007aff !important;
+}
+
+.role-badge.user {
+    background: rgba(52, 199, 89, 0.15) !important;
+    color: #34c759 !important;
+}
+
+/* Пустые состояния */
+.empty-state {
+    text-align: center !important;
+    padding: 60px 20px !important;
+    color: var(--tg-theme-hint-color, #8E8E93) !important;
+}
+
+/* Загрузка */
+.loading-screen {
+    background: var(--tg-theme-bg-color, #1a1a1a) !important;
+}
+
+/* Анимации для Telegram */
+@media (prefers-reduced-motion: no-preference) {
+    .nav-item,
+    .order-card,
+    .client-card {
+        transition: all 0.2s ease !important;
+    }
+    
+    .order-card:active,
+    .client-card:active {
+        transform: scale(0.98) !important;
+    }
+}
+
+/* Убираем лишние тени в темной теме */
+@media (prefers-color-scheme: dark) {
+    .card,
+    .order-card,
+    .client-card {
+        box-shadow: none !important;
+    }
+} 

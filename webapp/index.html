@@ -3,1833 +3,2354 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="description" content="Сервис-Крым - современное приложение для управления заказами">
-    <meta name="theme-color" content="#1a1a1a">
-    <title>Сервис-Крым</title>
-    
-    <!-- PWA Support -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
-    
-    <!-- Telegram WebApp -->
+    <title>Сервис-Крым | Будущее уже здесь</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <style>
-        /* CSS Variables for Theming */
+        /* ПЕРЕМЕННЫЕ И ТЕМЫ */
         :root {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #2d2d2d;
-            --bg-tertiary: #3a3a3a;
-            --text-primary: #ffffff;
-            --text-secondary: #cccccc;
-            --text-muted: #999999;
-            --accent-primary: #007aff;
-            --accent-secondary: #5ac8fa;
-            --success: #34c759;
-            --warning: #ff9500;
-            --error: #ff3b30;
-            --border-color: #444444;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --bg-primary: #2c3e50;
+            --bg-secondary: #34495e;
+            --bg-tertiary: #233140;
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --text-primary: #ecf0f1;
+            --text-secondary: #bdc3c7;
+            --text-hint: #95a5a6;
+            --accent: #f39c12;
+            --accent-hover: #e67e22;
+            --accent-glow: rgba(243, 156, 18, 0.4);
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --border: rgba(255, 255, 255, 0.1);
+            --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            --glow: 0 0 20px var(--accent-glow);
+            --transition: all 0.3s ease-in-out;
             --radius: 12px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius-sm: 8px;
+            --radius-lg: 16px;
         }
-
-        /* Reset and Base Styles */
+        
+        /* СБРОС И БАЗОВЫЕ СТИЛИ */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-            height: 100vh;
-        }
-
-        /* Loading Screen */
-        .loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
+        
+        html, body {
             width: 100%;
-            height: 100vh;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            opacity: 1;
-            transition: opacity 0.5s ease;
+            height: 100%;
+            overflow-x: hidden;
         }
-
-        .loading-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 3px solid #3a3a3a;
-            border-top: 3px solid #FF8C00;
-            border-right: 3px solid #D2691E;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-
-        .loading-text {
-            font-size: 18px;
-            color: var(--text-secondary);
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .loading-subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            text-align: center;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Main App Container */
-        .app {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-
-        .app.loaded {
-            opacity: 1;
-        }
-
-        /* Header */
-        .header {
-            background: var(--bg-secondary);
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--accent-primary);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .user-name {
-            font-size: 14px;
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
             color: var(--text-primary);
+            background: var(--bg-primary);
+            padding-bottom: 90px;
+            overscroll-behavior: none;
+            position: relative;
         }
-
-        .user-role {
-            font-size: 12px;
-            color: var(--text-muted);
-            background: var(--bg-tertiary);
-            padding: 2px 8px;
-            border-radius: 6px;
+        
+        /* ФОНОВЫЕ ЭФФЕКТЫ - УДАЛЕНО */
+        
+        /* АНИМАЦИИ */
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-
-        /* Navigation */
-        .nav {
-            display: flex;
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-
-        .nav-item {
-            flex-shrink: 0;
-            padding: 15px 20px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: var(--transition);
-            border-bottom: 3px solid transparent;
-            font-weight: 500;
+        
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 var(--accent-glow);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 0 20px 10px var(--accent-glow);
+            }
         }
-
-        .nav-item:hover {
-            color: var(--text-primary);
-            background: var(--bg-tertiary);
+        
+        @keyframes glow {
+            0%, 100% { 
+                box-shadow: 0 0 5px var(--accent), 0 0 10px var(--accent), 0 0 15px var(--accent);
+            }
+            50% { 
+                box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent), 0 0 30px var(--accent);
+            }
         }
-
-        .nav-item.active {
-            color: var(--accent-primary);
-            border-bottom-color: var(--accent-primary);
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
-
-        /* Main Content */
-        .main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
+        
+        @keyframes rotate {
+            to { transform: rotate(360deg); }
         }
-
-        /* Panel System */
+        
+        /* УТИЛИТЫ */
+        .hidden { display: none !important; }
+        
+        /* ГЛАВНЫЙ КОНТЕЙНЕР */
+        .app-container {
+            position: relative;
+            min-height: 100vh;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        /* ПАНЕЛИ */
         .panel {
+            padding: 24px;
             display: none;
-            animation: fadeIn 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
+        
         .panel.active {
             display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        /* ЗАГОЛОВКИ */
+        .page-header {
+            margin-bottom: 32px;
+            animation: slideUp 0.6s ease-out;
         }
-
-        /* Cards */
-        .card {
-            background: var(--bg-secondary);
+        
+        .page-header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .page-header p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 500;
+        }
+        
+        /* ПОИСК И ФИЛЬТРЫ */
+        .search-container {
+            position: relative;
+            margin-bottom: 24px;
+            animation: slideUp 0.6s ease-out 0.1s both;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 18px 24px 18px 56px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 2px solid var(--border);
             border-radius: var(--radius);
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 500;
             transition: var(--transition);
         }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+        
+        .search-input::placeholder {
+            color: var(--text-hint);
         }
-
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.05);
+            box-shadow: 0 0 0 4px var(--accent-glow);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            font-size: 20px;
+        }
+        
+        /* ФИЛЬТРЫ */
+        .filter-chips {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 4px 0;
+            margin-bottom: 24px;
+            scrollbar-width: none;
+            -webkit-scrollbar: none;
+            animation: slideUp 0.6s ease-out 0.2s both;
+        }
+        
+        .chip {
+            padding: 10px 24px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-lg);
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .chip::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .chip:hover::before {
+            left: 100%;
+        }
+        
+        .chip:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .chip.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+            font-weight: 700;
+            animation: pulse 0.5s ease-out;
+            box-shadow: var(--glow);
+        }
+        
+        .chip i {
+            margin-right: 8px;
+        }
+        
+        /* СТЕКЛЯННЫЕ КАРТОЧКИ */
+        .card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--accent), var(--success), var(--danger), var(--accent));
+            border-radius: var(--radius);
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s;
+            background-size: 400% 400%;
+            animation: gradientShift 4s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .card:hover::before {
+            opacity: 1;
+        }
+        
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: transparent;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .card:active {
+            transform: scale(0.98);
+        }
+        
         .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
+            align-items: flex-start;
+            margin-bottom: 16px;
         }
-
+        
         .card-title {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 20px;
+            font-weight: 700;
             color: var(--text-primary);
+            margin-bottom: 4px;
         }
-
-        .card-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .status-new { background: var(--warning); color: #000; }
-        .status-inprogress { background: var(--accent-primary); color: #fff; }
-        .status-completed { background: var(--success); color: #fff; }
-        .status-canceled { background: var(--error); color: #fff; }
-
-        /* Buttons */
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: var(--radius);
+        
+        .card-subtitle {
             font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
+        .card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .info-row i {
+            width: 20px;
+            color: var(--accent);
+            text-align: center;
+        }
+        
+        .info-row strong {
+            color: var(--text-secondary);
             font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            text-decoration: none;
+            margin-right: 4px;
+        }
+        
+        /* ГОЛОГРАФИЧЕСКИЕ СТАТУСЫ */
+        .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            justify-content: center;
-        }
-
-        .btn-primary {
-            background: var(--accent-primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #0056b3;
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        .btn-secondary:hover {
-            background: #4a4a4a;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--error);
-            color: white;
-        }
-
-        /* Forms */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius);
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            font-size: 14px;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
-        }
-
-        /* Grid System */
-        .grid {
-            display: grid;
-            gap: 20px;
-        }
-
-        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: var(--bg-secondary);
-            padding: 20px;
-            border-radius: var(--radius);
-            text-align: center;
-            border: 1px solid var(--border-color);
-        }
-
-        .stat-number {
-            font-size: 32px;
+            padding: 8px 20px;
+            border-radius: var(--radius-lg);
+            font-size: 13px;
             font-weight: 700;
-            color: var(--accent-primary);
-            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
         }
-
+        
+        .status-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: inherit;
+            filter: blur(10px);
+            opacity: 0.5;
+            z-index: -1;
+        }
+        
+        .status-badge.new {
+            background: linear-gradient(135deg, rgba(0, 122, 255, 0.2), rgba(0, 212, 255, 0.2));
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        
+        .status-badge.in_progress {
+            background: linear-gradient(135deg, rgba(255, 170, 0, 0.2), rgba(255, 200, 0, 0.2));
+            color: var(--warning);
+            border: 1px solid var(--warning);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .status-badge.completed {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 200, 100, 0.2));
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        
+        .status-badge.canceled {
+            background: linear-gradient(135deg, rgba(255, 51, 102, 0.2), rgba(255, 100, 150, 0.2));
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        
+        .status-badge.active {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 200, 100, 0.2));
+            color: var(--success);
+            border: 1px solid var(--success);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+        }
+        
+        .status-badge.blocked {
+            background: linear-gradient(135deg, rgba(255, 51, 102, 0.2), rgba(255, 100, 150, 0.2));
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+        
+        /* НЕОНОВЫЕ РОЛИ */
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        .role-badge.owner {
+            background: linear-gradient(135deg, rgba(142, 36, 170, 0.3), rgba(200, 36, 255, 0.3));
+            color: #c824ff;
+            border: 1px solid #c824ff;
+        }
+        
+        .role-badge.operator {
+            background: linear-gradient(135deg, rgba(0, 122, 255, 0.3), rgba(0, 212, 255, 0.3));
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        
+        .role-badge.driver {
+            background: linear-gradient(135deg, rgba(255, 170, 0, 0.3), rgba(255, 200, 0, 0.3));
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+        
+        .role-badge.user {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 200, 100, 0.3));
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        
+        /* ПРОФИЛЬ БУДУЩЕГО */
+        .profile-container {
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        .profile-header {
+            text-align: center;
+            padding: 40px 0;
+            background: linear-gradient(135deg, var(--bg-glass), rgba(0, 212, 255, 0.05));
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-lg);
+            margin-bottom: 32px;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+            opacity: 0.3;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 700;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 40px var(--accent-glow);
+            animation: float 3s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .profile-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* СТАТИСТИКА */
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent, var(--accent-glow));
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        
+        .stat-card:hover::before {
+            transform: translateX(0);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+        
         .stat-label {
             font-size: 14px;
-            color: var(--text-muted);
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-
-        /* Modal */
+        
+        /* НАВИГАЦИЯ БУДУЩЕГО */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
+            padding: 0 20px;
+        }
+        
+        .nav-item {
+            flex: 1;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: var(--text-hint);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            transition: var(--transition);
+            cursor: pointer;
+            background: none;
+            border: none;
+            position: relative;
+            border-radius: var(--radius);
+        }
+        
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+        
+        .nav-item.active::before {
+            opacity: 1;
+            bottom: -5px;
+            width: 30px;
+            height: 3px;
+            border-radius: 2px;
+            box-shadow: 0 0 10px var(--accent);
+        }
+        
+        .nav-item.active {
+            color: var(--accent);
+            background: rgba(0, 212, 255, 0.1);
+        }
+        
+        .nav-item i {
+            font-size: 24px;
+            transition: transform 0.3s;
+        }
+        
+        .nav-item.active i {
+            transform: scale(1.2);
+            filter: drop-shadow(0 0 8px var(--accent));
+        }
+        
+        .nav-item:hover {
+            color: var(--accent);
+            background: rgba(0, 212, 255, 0.05);
+        }
+        
+        /* МОДАЛЬНОЕ ОКНО */
         .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .modal.show {
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
             display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
         }
-
+        
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
         .modal-content {
             background: var(--bg-secondary);
-            border-radius: var(--radius);
-            padding: 30px;
-            max-width: 500px;
             width: 100%;
-            max-height: 80vh;
+            max-width: 600px;
+            max-height: 85vh;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            padding: 32px;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-y: auto;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
         }
-
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 28px;
         }
-
+        
         .modal-title {
-            font-size: 20px;
-            font-weight: 600;
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-
+        
         .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            color: var(--text-muted);
+            width: 40px;
+            height: 40px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            color: var(--text-secondary);
+            font-size: 20px;
             cursor: pointer;
-            padding: 0;
-            width: 30px;
-            height: 30px;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
         }
-
-        /* Notifications */
-        .notifications {
+        
+        .modal-close:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: white;
+            transform: rotate(90deg);
+            box-shadow: 0 0 20px rgba(255, 51, 102, 0.5);
+        }
+        
+        /* ЗАГРУЗКА */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-right-color: var(--accent);
+            border-radius: 50%;
+            animation: rotate 1s linear infinite;
+            margin-bottom: 20px;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+        
+        .loading-text {
+            font-size: 16px;
+            font-weight: 600;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        /* ПУСТОЕ СОСТОЯНИЕ */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state i {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.2;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .empty-state p {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        /* НЕОНОВЫЕ КНОПКИ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 400px;
+            height: 400px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-glass);
+            color: var(--text-primary);
+            border: 2px solid var(--accent);
+            box-shadow: none;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #00cc6a);
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #cc0033);
+            box-shadow: 0 4px 20px rgba(255, 51, 102, 0.4);
+        }
+        
+        .btn-block {
+            width: 100%;
+        }
+        
+        /* ДЕЙСТВИЯ ДЛЯ РАЗНЫХ РОЛЕЙ */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 32px;
+        }
+        
+        .action-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            transform: scale(0);
+            transition: transform 0.5s;
+            opacity: 0.3;
+        }
+        
+        .action-card:hover::before {
+            transform: scale(1);
+        }
+        
+        .action-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .action-card i {
+            font-size: 40px;
+            color: var(--accent);
+            margin-bottom: 16px;
+            filter: drop-shadow(0 0 10px var(--accent-glow));
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .action-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        
+        .action-card p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        /* СЧЕТЧИКИ */
+        .badge-count {
+            position: absolute;
+            top: 5px;
+            right: 15%;
+            background: linear-gradient(135deg, var(--danger), #ff0066);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+            min-width: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(255, 51, 102, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        /* ТОСТ УВЕДОМЛЕНИЯ */
+        .toast {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 2000;
-        }
-
-        .notification {
-            background: var(--bg-secondary);
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
             color: var(--text-primary);
-            padding: 15px 20px;
+            padding: 20px 28px;
             border-radius: var(--radius);
-            margin-bottom: 10px;
-            border-left: 4px solid var(--accent-primary);
-            box-shadow: var(--shadow);
-            max-width: 300px;
-            animation: slideIn 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transform: translateX(500px);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 3000;
+            max-width: 400px;
+            border: 1px solid var(--border);
         }
-
-        .notification.success { border-left-color: var(--success); }
-        .notification.error { border-left-color: var(--error); }
-        .notification.warning { border-left-color: var(--warning); }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        
+        .toast.show {
+            transform: translateX(0);
         }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .header {
-                padding: 10px 15px;
+        
+        .toast i {
+            font-size: 24px;
+            filter: drop-shadow(0 0 8px currentColor);
+        }
+        
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+        
+        .toast.success i {
+            color: var(--success);
+        }
+        
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+        
+        .toast.error i {
+            color: var(--danger);
+        }
+        
+        .toast.warning {
+            border-left: 4px solid var(--warning);
+        }
+        
+        .toast.warning i {
+            color: var(--warning);
+        }
+        
+        /* ДЕТАЛИ ЗАКАЗА */
+        .order-details h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 24px 0 16px;
+            color: var(--text-primary);
+        }
+        
+        .order-actions {
+            margin-top: 32px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        /* АДАПТИВНОСТЬ */
+        @media (max-width: 375px) {
+            .page-header h1 {
+                font-size: 32px;
             }
             
-            .main {
-                padding: 15px;
+            .filter-chips {
+                gap: 8px;
             }
             
-            .modal-content {
-                margin: 0;
-                border-radius: 0;
-                max-height: 100vh;
-                height: 100vh;
+            .chip {
+                padding: 8px 20px;
+                font-size: 13px;
             }
             
-            .grid-2, .grid-3 {
-                grid-template-columns: 1fr;
+            .stat-card {
+                padding: 16px;
+            }
+            
+            .stat-value {
+                font-size: 32px;
+            }
+            
+            .action-card {
+                padding: 24px;
+            }
+            
+            .action-card i {
+                font-size: 32px;
             }
         }
-
-        /* Utility Classes */
-        .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .mt-20 { margin-top: 20px; }
-        .mb-20 { margin-bottom: 20px; }
-        .hidden { display: none !important; }
-        .flex { display: flex; }
-        .items-center { align-items: center; }
-        .justify-between { justify-content: space-between; }
-        .gap-10 { gap: 10px; }
-        .service-crimea-animated {
-            font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            color: #D2691E;
-            background: linear-gradient(135deg, 
-                #FF8C00 0%, 
-                #D2691E 50%, 
-                #CD853F 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
-            display: inline-block;
-            position: relative;
-            transform: translateX(-120vw) rotate(-25deg) scale(0.2);
+        
+        /* АНИМАЦИЯ ПОЯВЛЕНИЯ */
+        [data-animate] {
             opacity: 0;
-            animation: serviceEntranceAnimation 2.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s forwards;
-            filter: drop-shadow(0 2px 8px rgba(210, 105, 30, 0.3));
-            /* 4K Quality enhancements */
-            text-rendering: optimizeLegibility;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            backface-visibility: hidden;
-            transform-style: preserve-3d;
-            will-change: transform, opacity, filter;
+            transform: translateY(20px);
         }
-
-        .service-crimea-animated.loaded {
-            transform: translateX(0) rotate(0deg) scale(1);
+        
+        [data-animate].animate {
             opacity: 1;
-            background: linear-gradient(135deg, 
-                #FF8C00 0%, 
-                #D2691E 30%, 
-                #CD853F 60%,
-                #DAA520 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-fill-color: transparent;
-            animation: none;
-            filter: drop-shadow(0 2px 8px rgba(210, 105, 30, 0.4));
-            letter-spacing: 0.08em;
-            /* Final quality state */
-            will-change: auto;
-            backface-visibility: visible;
+            transform: translateY(0);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* СКРОЛЛБАР */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-hover);
         }
 
-        .service-subtitle {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 0.7rem;
-            font-weight: 500;
-            letter-spacing: 0.15em;
-            color: #8B7355;
-            text-align: center;
-            margin-top: -2px;
-            position: relative;
-            cursor: default;
-            transition: all 0.3s ease;
-            /* Quality enhancements */
-            text-rendering: optimizeLegibility;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
+        /* СТИЛИ ДЛЯ ЗАСТАВКИ */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #111;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
         }
 
-        .service-subtitle span {
-            opacity: 0;
-            transform: translateY(10px) scale(0.8);
-            animation: letterAppear 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-            display: inline-block;
+        #splash-title {
+            font-size: 5vw;
+            font-weight: 900;
+            letter-spacing: 2px;
+            animation: splash-title-animation 4s ease-in-out forwards;
         }
 
-        .service-subtitle span.separator {
-            color: #A0522D;
-            font-weight: 600;
-        }
-
-        .service-subtitle span.space {
-            width: 0.3em;
-        }
-
-        @keyframes letterAppear {
+        @keyframes splash-title-animation {
             0% {
+                transform: translateX(-100vw) skewX(-15deg);
                 opacity: 0;
-                transform: translateY(10px) scale(0.8);
+                filter: blur(10px);
+            }
+            25% {
+                transform: translateX(0) skewX(0);
+                opacity: 1;
+                filter: blur(5px);
             }
             50% {
-                opacity: 0.7;
-                transform: translateY(-2px) scale(1.05);
+                transform: scale(1.1);
+                filter: blur(2px);
+            }
+            75% {
+                transform: scale(1);
+                filter: blur(0);
             }
             100% {
+                transform: scale(1);
                 opacity: 1;
-                transform: translateY(0) scale(1);
+                filter: blur(0);
             }
         }
 
-        /* Задержки для каждой буквы */
-        .service-subtitle span:nth-child(1) { animation-delay: 3.2s; }  /* Д */
-        .service-subtitle span:nth-child(2) { animation-delay: 3.35s; } /* Е */
-        .service-subtitle span:nth-child(3) { animation-delay: 3.5s; }  /* М */
-        .service-subtitle span:nth-child(4) { animation-delay: 3.65s; } /* О */
-        .service-subtitle span:nth-child(5) { animation-delay: 3.8s; }  /* Н */
-        .service-subtitle span:nth-child(6) { animation-delay: 3.95s; } /* Т */
-        .service-subtitle span:nth-child(7) { animation-delay: 4.1s; }  /* А */
-        .service-subtitle span:nth-child(8) { animation-delay: 4.25s; } /* Ж */
-        .service-subtitle span:nth-child(9) { animation-delay: 4.5s; }  /* пробел */
-        .service-subtitle span:nth-child(10) { animation-delay: 4.7s; } /* | */
-        .service-subtitle span:nth-child(11) { animation-delay: 4.9s; } /* пробел */
-        .service-subtitle span:nth-child(12) { animation-delay: 5.1s; } /* В */
-        .service-subtitle span:nth-child(13) { animation-delay: 5.25s; }/* Ы */
-        .service-subtitle span:nth-child(14) { animation-delay: 5.4s; } /* В */
-        .service-subtitle span:nth-child(15) { animation-delay: 5.55s; }/* О */
-        .service-subtitle span:nth-child(16) { animation-delay: 5.7s; } /* З */
-        .service-subtitle span:nth-child(17) { animation-delay: 5.9s; } /* пробел */
-        .service-subtitle span:nth-child(18) { animation-delay: 6.1s; } /* М */
-        .service-subtitle span:nth-child(19) { animation-delay: 6.25s; }/* У */
-        .service-subtitle span:nth-child(20) { animation-delay: 6.4s; } /* С */
-        .service-subtitle span:nth-child(21) { animation-delay: 6.55s; }/* О */
-        .service-subtitle span:nth-child(22) { animation-delay: 6.7s; } /* Р */
-        .service-subtitle span:nth-child(23) { animation-delay: 6.85s; }/* А */
-
-        .service-subtitle.loaded span {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            animation: none;
+        #splash-subtitle {
+            font-size: 2vw;
+            font-weight: 500;
+            letter-spacing: 1px;
+            margin-top: 10px;
+            color: #ccc;
+            opacity: 0;
+            animation: fade-in 1s ease-in-out 3s forwards;
         }
 
-        .service-subtitle:hover {
-            transform: translateY(-1px);
-            filter: drop-shadow(0 1px 4px rgba(139, 115, 85, 0.3));
-            transition: all 0.3s ease;
+        #splash-subtitle span {
+            opacity: 0;
+            display: inline-block;
+            animation: letter-fade-in 0.5s forwards;
         }
 
-        .service-subtitle:hover span:not(.separator) {
-            color: #A0522D;
-            transition: color 0.3s ease;
-        }
-
-        .service-subtitle:hover span.separator {
-            color: #D2691E;
-            transform: scale(1.1);
-            transition: all 0.3s ease;
-        }
-
-        @keyframes serviceEntranceAnimation {
-            0% {
-                transform: translateX(-120vw) rotate(-25deg) scale(0.2);
-                opacity: 0;
-                filter: drop-shadow(0 0 0 rgba(210, 105, 30, 0)) blur(8px) brightness(0.5);
-                letter-spacing: -0.1em;
-            }
-            15% {
-                transform: translateX(-20vw) rotate(-8deg) scale(0.6);
-                opacity: 0.3;
-                filter: drop-shadow(0 4px 20px rgba(255, 140, 0, 0.6)) blur(6px) brightness(0.8);
-                letter-spacing: 0.02em;
-            }
-            35% {
-                transform: translateX(60px) rotate(8deg) scale(1.15);
-                opacity: 0.8;
-                filter: drop-shadow(0 6px 24px rgba(255, 140, 0, 0.8)) blur(3px) brightness(1.1);
-                letter-spacing: 0.06em;
-            }
-            55% {
-                transform: translateX(-30px) rotate(-4deg) scale(0.92);
-                opacity: 0.95;
-                filter: drop-shadow(0 4px 16px rgba(210, 105, 30, 0.6)) blur(2px) brightness(1.05);
-                letter-spacing: 0.08em;
-            }
-            72% {
-                transform: translateX(15px) rotate(2deg) scale(1.04);
+        @keyframes fade-in {
+            to {
                 opacity: 1;
-                filter: drop-shadow(0 3px 12px rgba(210, 105, 30, 0.5)) blur(1px) brightness(1.02);
-                letter-spacing: 0.08em;
             }
-            88% {
-                transform: translateX(-5px) rotate(-1deg) scale(0.98);
+        }
+
+        @keyframes letter-fade-in {
+            to {
                 opacity: 1;
-                filter: drop-shadow(0 2px 10px rgba(210, 105, 30, 0.4)) blur(0.5px) brightness(1.01);
-                letter-spacing: 0.08em;
-            }
-            100% {
-                transform: translateX(0) rotate(0deg) scale(1);
-                opacity: 1;
-                filter: drop-shadow(0 2px 8px rgba(210, 105, 30, 0.4)) brightness(1);
-                letter-spacing: 0.08em;
             }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen">
-        <div class="loading-spinner"></div>
-        <div class="loading-text" style="color: #D2691E; font-weight: 600;">Загрузка <span style="color: #FF8C00;">Сервис-Крым</span>...</div>
-        <div class="loading-subtitle" id="loading-subtitle">Инициализация приложения</div>
+    <!-- Экран-заставка -->
+    <div id="splash-screen">
+        <div id="splash-title">СЕРВИС-КРЫМ</div>
+        <div id="splash-subtitle"></div>
     </div>
 
-    <!-- Notifications Container -->
-    <div id="notifications" class="notifications"></div>
-
-    <!-- Main App -->
-    <div id="app" class="app">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="logo">
-                    <span class="service-crimea-animated">СЕРВИС-КРЫМ</span>
-                    <div class="service-subtitle">
-                        <span>Д</span><span>Е</span><span>М</span><span>О</span><span>Н</span><span>Т</span><span>А</span><span>Ж</span><span class="space"> </span><span class="separator">|</span><span class="space"> </span><span>В</span><span>Ы</span><span>В</span><span>О</span><span>З</span><span class="space"> </span><span>М</span><span>У</span><span>С</span><span>О</span><span>Р</span><span>А</span>
-                    </div>
+    <!-- Сетка будущего - УДАЛЕНО -->
+    
+    <div class="app-container">
+        <!-- Панель заказов -->
+        <div id="orders-panel" class="panel active">
+            <div class="page-header">
+                <h1>Центр управления</h1>
+                <p id="orders-subtitle">Система управления заказами</p>
+            </div>
+            
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="orders-search" placeholder="Поиск в базе данных...">
+            </div>
+            
+            <div class="filter-chips" id="orders-filters">
+                <div class="chip active" data-status="">
+                    <i class="fas fa-globe"></i> Все заказы
                 </div>
-                <div class="user-info">
-                    <div class="user-avatar" id="user-avatar">?</div>
-                    <div>
-                        <div class="user-name" id="user-name">Загрузка...</div>
-                        <div class="user-role" id="user-role">—</div>
-                    </div>
+                <div class="chip" data-status="new">
+                    <i class="fas fa-sparkles"></i> Новые
+                </div>
+                <div class="chip" data-status="in_progress">
+                    <i class="fas fa-spinner"></i> В процессе
+                </div>
+                <div class="chip" data-status="completed">
+                    <i class="fas fa-check-circle"></i> Завершенные
                 </div>
             </div>
-        </header>
-
-        <!-- Navigation -->
-        <nav class="nav" id="nav">
-            <!-- Navigation items will be dynamically generated based on user role -->
-        </nav>
-
-        <!-- Main Content -->
-        <main class="main">
-            <!-- Dashboard Panel -->
-            <div id="dashboard-panel" class="panel active">
-                <div class="stats-grid" id="stats-grid">
-                    <!-- Stats cards will be dynamically generated -->
-                </div>
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Добро пожаловать!</h2>
-                    </div>
-                    <p>Выберите раздел в меню выше для работы с системой.</p>
-                </div>
+            
+            <div id="orders-list" class="orders-list"></div>
+        </div>
+        
+        <!-- Панель клиентов -->
+        <div id="clients-panel" class="panel">
+            <div class="page-header">
+                <h1>База клиентов</h1>
+                <p>Управление пользователями системы</p>
             </div>
-
-            <!-- Orders Panel -->
-            <div id="orders-panel" class="panel">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Заказы</h2>
-                        <button id="create-order-btn" class="btn btn-primary">+ Создать заказ</button>
+            
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" id="clients-search" placeholder="Поиск пользователей...">
+            </div>
+            
+            <div id="clients-list" class="clients-list"></div>
+        </div>
+        
+        <!-- Панель профиля -->
+        <div id="profile-panel" class="panel">
+            <div class="profile-container">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profile-avatar">
+                        <i class="fas fa-user"></i>
                     </div>
-                    <div id="orders-filters" class="mb-20">
-                        <div class="flex gap-10" style="flex-wrap: wrap;">
-                            <select id="status-filter" class="form-control" style="max-width: 200px;">
-                                <option value="">Все статусы</option>
-                                <option value="new">Новые</option>
-                                <option value="awaiting_confirmation">Ожидают подтверждения</option>
-                                <option value="inprogress">В работе</option>
-                                <option value="completed">Выполненные</option>
-                                <option value="canceled">Отмененные</option>
-                            </select>
-                            <input type="text" id="search-input" class="form-control" placeholder="Поиск по клиенту, телефону..." style="max-width: 250px;">
-                            <button id="refresh-orders-btn" class="btn btn-secondary">🔄 Обновить</button>
-                        </div>
+                    <h2 class="profile-name" id="profile-name">Загрузка...</h2>
+                    <div id="profile-role"></div>
+                </div>
+                
+                <div class="profile-stats" id="profile-stats">
+                    <div class="stat-card" data-animate>
+                        <div class="stat-value" id="stat-orders">0</div>
+                        <div class="stat-label">Всего заказов</div>
                     </div>
-                    <div id="orders-list">
-                        <!-- Orders will be dynamically loaded -->
+                    <div class="stat-card" data-animate>
+                        <div class="stat-value" id="stat-active">0</div>
+                        <div class="stat-label">Активных</div>
+                    </div>
+                    <div class="stat-card" data-animate>
+                        <div class="stat-value" id="stat-completed">0</div>
+                        <div class="stat-label">Завершено</div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Clients Panel -->
-            <div id="clients-panel" class="panel">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Клиенты</h2>
+                
+                <div class="profile-info card" data-animate>
+                    <h3 style="margin-bottom: 20px;">Информация профиля</h3>
+                    <div class="info-row">
+                        <i class="fas fa-fingerprint"></i>
+                        <span><strong>ID:</strong> <span id="profile-id">-</span></span>
                     </div>
-                    <div id="clients-list">
-                        <!-- Clients will be dynamically loaded -->
+                    <div class="info-row">
+                        <i class="fas fa-phone-alt"></i>
+                        <span><strong>Телефон:</strong> <span id="profile-phone">-</span></span>
                     </div>
-                </div>
-            </div>
-
-            <!-- Profile Panel -->
-            <div id="profile-panel" class="panel">
-                <div class="card">
-                    <div class="card-header">
-                        <h2 class="card-title">Мой профиль</h2>
+                    <div class="info-row">
+                        <i class="fas fa-at"></i>
+                        <span><strong>Username:</strong> <span id="profile-username">-</span></span>
                     </div>
-                    <div id="profile-content">
-                        <!-- Profile content will be loaded here -->
+                    <div class="info-row">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span><strong>Дата регистрации:</strong> <span id="profile-created">-</span></span>
                     </div>
                 </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modals -->
-    <div id="order-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="order-modal-title">Создать заказ</h3>
-                <button class="modal-close" onclick="closeModal('order-modal')">&times;</button>
-            </div>
-            <div id="order-modal-content">
-                <!-- Order form will be generated here -->
+                
+                <div class="actions-grid" id="profile-actions" data-animate></div>
             </div>
         </div>
     </div>
-
-    <!-- Order Details Modal -->
-    <div id="order-details-modal" class="modal">
+    
+    <!-- Нижняя навигация -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-panel="orders">
+            <i class="fas fa-th-large"></i>
+            <span>Центр</span>
+            <span class="badge-count hidden" id="orders-badge">0</span>
+        </button>
+        <button class="nav-item" data-panel="clients" id="clients-nav">
+            <i class="fas fa-users"></i>
+            <span>Клиенты</span>
+        </button>
+        <button class="nav-item" data-panel="profile">
+            <i class="fas fa-user-astronaut"></i>
+            <span>Профиль</span>
+        </button>
+    </nav>
+    
+    <!-- Модальное окно -->
+    <div class="modal" id="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" id="order-details-title">Детали заказа</h3>
-                <button class="modal-close" onclick="closeModal('order-details-modal')">&times;</button>
+                <h2 class="modal-title" id="modal-title">Заголовок</h2>
+                <button class="modal-close" onclick="UI.closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div id="order-details-content">
-                <!-- Order details will be generated here -->
-            </div>
+            <div class="modal-body" id="modal-body"></div>
         </div>
     </div>
-
-    <!-- Media Upload Modal -->
-    <div id="media-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Загрузить файлы</h3>
-                <button class="modal-close" onclick="closeModal('media-modal')">&times;</button>
-            </div>
-            <div id="media-modal-content">
-                <div class="form-group">
-                    <label class="form-label">Выберите файлы</label>
-                    <input type="file" id="media-input" class="form-control" multiple accept="image/*,video/*">
-                </div>
-                <div id="media-preview" class="mb-20">
-                    <!-- File preview will be shown here -->
-                </div>
-                <div class="flex gap-10">
-                    <button id="upload-media-btn" class="btn btn-primary">Загрузить</button>
-                    <button onclick="closeModal('media-modal')" class="btn btn-secondary">Отмена</button>
-                </div>
-            </div>
-        </div>
+    
+    <!-- Тост уведомления -->
+    <div class="toast" id="toast">
+        <i class="fas fa-info-circle" id="toast-icon"></i>
+        <span id="toast-message"></span>
     </div>
-
-    <!-- Confirmation Modal -->
-    <div id="confirm-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="confirm-title">Подтверждение</h3>
-                <button class="modal-close" onclick="closeModal('confirm-modal')">&times;</button>
-            </div>
-            <div id="confirm-content">
-                <p id="confirm-message">Вы уверены?</p>
-                <div class="flex gap-10 mt-20">
-                    <button id="confirm-yes-btn" class="btn btn-primary">Да</button>
-                    <button onclick="closeModal('confirm-modal')" class="btn btn-secondary">Нет</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Configuration Script -->
+    
+    <!-- Конфигурация -->
+    <script src="config.js"></script>
+    
+    <!-- Обратная совместимость для старого API -->
     <script>
-        // Global App Configuration [[memory:3922676]]
-        window.APP_CONFIG = {
-            API_BASE: window.location.origin,
-            VERSION: '3.0',
-            DEBUG: window.location.hostname === 'localhost',
-            REFRESH_INTERVAL: 30000, // 30 seconds
-            NOTIFICATION_TIMEOUT: 5000 // 5 seconds
+        // Для обратной совместимости со старым CONFIG
+        window.CONFIG = {
+            API_BASE_URL: window.APP_CONFIG?.API_BASE || ''
         };
-
-        // Environment variables from .env
-        if (window.location.hostname !== 'localhost') {
-            // Production configuration will be loaded from server
-        }
     </script>
-
-    <!-- Main Application Script -->
+    
+    <!-- Основной скрипт -->
     <script>
-        class ServiceApp {
-            constructor() {
-                this.user = null;
-                this.currentPanel = 'dashboard';
-                this.refreshInterval = null;
-                this.apiCache = new Map();
-                
-                // Bind methods
-                this.init = this.init.bind(this);
-                this.loadUser = this.loadUser.bind(this);
-                this.setupNavigation = this.setupNavigation.bind(this);
-                this.showPanel = this.showPanel.bind(this);
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        tg.setHeaderColor('bg_color');
+        
+        // Применяем тему Telegram
+        if (tg.themeParams) {
+            const root = document.documentElement;
+            const isDark = tg.colorScheme === 'dark';
+            
+            if (!isDark) {
+                root.style.setProperty('--bg-primary', '#ffffff');
+                root.style.setProperty('--bg-secondary', '#f5f5f5');
+                root.style.setProperty('--text-primary', '#000000');
+                root.style.setProperty('--text-secondary', '#666666');
             }
-
-            async init() {
+        }
+        
+        // Глобальные переменные
+        let currentUser = null;
+        let currentPanel = 'orders';
+        let ordersCache = [];
+        let clientsCache = [];
+        
+        // API модуль
+        const API = {
+            baseUrl: window.APP_CONFIG?.API_BASE || '/api',
+            debugMode: window.APP_CONFIG?.DEBUG || false,
+            
+            async request(endpoint, options = {}) {
                 try {
-                    this.updateLoadingText('Подключение к Telegram...');
-                    await this.initTelegram();
-                    
-                    this.updateLoadingText('Загрузка профиля пользователя...');
-                    await this.loadUser();
-                    
-                    this.updateLoadingText('Настройка интерфейса...');
-                    this.setupUI();
-                    this.setupNavigation();
-                    
-                    this.updateLoadingText('Загрузка данных...');
-                    await this.loadDashboardData();
-                    
-                    this.updateLoadingText('Запуск приложения...');
-                    this.startApp();
-                    
-                } catch (error) {
-                    console.error('Ошибка инициализации:', error);
-                    this.showError('Ошибка запуска приложения: ' + error.message);
-                }
-            }
-
-            updateLoadingText(text) {
-                const subtitle = document.getElementById('loading-subtitle');
-                if (subtitle) subtitle.textContent = text;
-            }
-
-            async initTelegram() {
-                // Initialize Telegram WebApp
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.ready();
-                    window.Telegram.WebApp.expand();
-                    window.Telegram.WebApp.BackButton.hide();
-                    window.Telegram.WebApp.MainButton.hide();
-                    console.log('✅ Telegram WebApp initialized');
-                } else {
-                    console.warn('⚠️ Telegram WebApp not available, using fallback mode');
-                }
-            }
-
-            async loadUser() {
-                try {
-                    const response = await this.apiRequest('/api/user/profile');
-                    this.user = response.data || response;
-                    console.log('👤 User loaded:', this.user);
-                } catch (error) {
-                    // Fallback to test profile for development
-                    console.warn('⚠️ Trying test profile endpoint...');
-                    try {
-                        const response = await this.apiRequest('/api/test/profile');
-                        this.user = response.data || response;
-                        console.log('👤 Test user loaded:', this.user);
-                    } catch (testError) {
-                        throw new Error('Не удалось загрузить профиль пользователя');
-                    }
-                }
-            }
-
-            setupUI() {
-                // Update user info in header
-                const avatar = document.getElementById('user-avatar');
-                const name = document.getElementById('user-name');
-                const role = document.getElementById('user-role');
-                
-                if (this.user) {
-                    const initials = (this.user.FirstName?.[0] || '') + (this.user.LastName?.[0] || '');
-                    avatar.textContent = initials || this.user.Role?.[0]?.toUpperCase() || '?';
-                    name.textContent = `${this.user.FirstName || ''} ${this.user.LastName || ''}`.trim() || 'Пользователь';
-                    
-                    const roleNames = {
-                        'user': 'Клиент',
-                        'operator': 'Оператор', 
-                        'admin': 'Администратор',
-                        'owner': 'Владелец',
-                        'driver': 'Водитель'
-                    };
-                    role.textContent = roleNames[this.user.Role] || this.user.Role;
-                }
-            }
-
-            setupNavigation() {
-                const nav = document.getElementById('nav');
-                const navItems = this.getNavigationItems();
-                
-                nav.innerHTML = navItems.map(item => 
-                    `<div class="nav-item ${item.id === this.currentPanel ? 'active' : ''}" 
-                          onclick="app.showPanel('${item.id}')">${item.label}</div>`
-                ).join('');
-            }
-
-            getNavigationItems() {
-                const baseItems = [
-                    { id: 'dashboard', label: '📊 Главная' },
-                    { id: 'orders', label: '📋 Заказы' },
-                    { id: 'profile', label: '👤 Профиль' }
-                ];
-
-                if (this.user && ['operator', 'admin', 'owner'].includes(this.user.Role)) {
-                    baseItems.splice(2, 0, { id: 'clients', label: '👥 Клиенты' });
-                }
-
-                return baseItems;
-            }
-
-            showPanel(panelId) {
-                // Hide all panels
-                document.querySelectorAll('.panel').forEach(panel => {
-                    panel.classList.remove('active');
-                });
-                
-                // Show selected panel
-                const panel = document.getElementById(`${panelId}-panel`);
-                if (panel) {
-                    panel.classList.add('active');
-                    this.currentPanel = panelId;
-                    
-                    // Update navigation
-                    document.querySelectorAll('.nav-item').forEach(item => {
-                        item.classList.remove('active');
+                    const url = `${this.baseUrl}${endpoint}`;
+                    const response = await fetch(url, {
+                        ...options,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Telegram-Auth': tg.initData || '',
+                            ...options.headers
+                        }
                     });
-                    event.target.classList.add('active');
-                    
-                    // Load panel data
-                    this.loadPanelData(panelId);
-                }
-            }
-
-            async loadPanelData(panelId) {
-                try {
-                    switch (panelId) {
-                        case 'orders':
-                            await this.loadOrders();
-                            break;
-                        case 'clients':
-                            await this.loadClients();
-                            break;
-                        case 'profile':
-                            this.loadProfile();
-                            break;
-                    }
-                } catch (error) {
-                    console.error(`Ошибка загрузки данных для панели ${panelId}:`, error);
-                    this.showError('Ошибка загрузки данных');
-                }
-            }
-
-            async loadDashboardData() {
-                try {
-                    // Load dashboard statistics
-                    const statsGrid = document.getElementById('stats-grid');
-                    const stats = await this.getStats();
-                    
-                    statsGrid.innerHTML = stats.map(stat => `
-                        <div class="stat-card">
-                            <div class="stat-number">${stat.value}</div>
-                            <div class="stat-label">${stat.label}</div>
-                        </div>
-                    `).join('');
-                } catch (error) {
-                    console.error('Ошибка загрузки статистики:', error);
-                }
-            }
-
-            async getStats() {
-                // Return different stats based on user role
-                if (this.user && ['operator', 'admin', 'owner'].includes(this.user.Role)) {
-                    try {
-                        const orders = await this.apiRequest('/api/admin/orders?status=active');
-                        const clients = await this.apiRequest('/api/admin/clients');
-                        
-                        return [
-                            { label: 'Активные заказы', value: orders?.data?.length || 0 },
-                            { label: 'Всего клиентов', value: clients?.data?.length || 0 },
-                            { label: 'Заказов сегодня', value: '—' },
-                            { label: 'Выручка', value: '—' }
-                        ];
-                    } catch (error) {
-                        console.error('Ошибка загрузки статистики админа:', error);
-                    }
-                } else {
-                    try {
-                        const orders = await this.apiRequest('/api/user/orders');
-                        return [
-                            { label: 'Мои заказы', value: orders?.data?.length || 0 },
-                            { label: 'Активные', value: orders?.data?.filter(o => o.Status === 'inprogress')?.length || 0 },
-                            { label: 'Выполнено', value: orders?.data?.filter(o => o.Status === 'completed')?.length || 0 }
-                        ];
-                    } catch (error) {
-                        console.error('Ошибка загрузки статистики пользователя:', error);
-                    }
-                }
-                
-                return [
-                    { label: 'Заказы', value: '—' },
-                    { label: 'Статистика', value: '—' }
-                ];
-            }
-
-            async loadOrders() {
-                try {
-                    // Get filter values
-                    const statusFilter = document.getElementById('status-filter')?.value || '';
-                    const searchFilter = document.getElementById('search-input')?.value.trim() || '';
-                    
-                    // Build endpoint with filters
-                    let endpoint = this.user && ['operator', 'admin', 'owner'].includes(this.user.Role) 
-                        ? '/api/admin/orders' 
-                        : '/api/user/orders';
-                    
-                    const params = new URLSearchParams();
-                    if (statusFilter) {
-                        params.append('status', statusFilter);
-                    }
-                    
-                    if (params.toString()) {
-                        endpoint += '?' + params.toString();
-                    }
-                    
-                    const response = await this.apiRequest(endpoint);
-                    let orders = response.data || response || [];
-                    
-                    // Client-side search filtering
-                    if (searchFilter) {
-                        orders = orders.filter(order => {
-                            const searchLower = searchFilter.toLowerCase();
-                            return (
-                                (order.ContactName && order.ContactName.toLowerCase().includes(searchLower)) ||
-                                (order.ContactPhone && order.ContactPhone.includes(searchFilter)) ||
-                                (order.ServiceAddress && order.ServiceAddress.toLowerCase().includes(searchLower)) ||
-                                (order.ID && order.ID.toString().includes(searchFilter))
-                            );
-                        });
-                    }
-                    
-                    this.renderOrders(orders);
-                } catch (error) {
-                    console.error('Ошибка загрузки заказов:', error);
-                    this.showError('Ошибка загрузки заказов');
-                }
-            }
-
-            renderOrders(orders) {
-                const container = document.getElementById('orders-list');
-                
-                if (!orders || orders.length === 0) {
-                    container.innerHTML = '<div class="text-center">Заказов пока нет</div>';
-                    return;
-                }
-
-                container.innerHTML = orders.map(order => `
-                    <div class="card" onclick="app.showOrderDetailsModal(${order.ID})" style="cursor: pointer;">
-                        <div class="card-header">
-                            <div class="card-title">Заказ #${order.ID}</div>
-                            <div class="card-badge ${window.AppUtils.getOrderStatus(order.Status).class}">${window.AppUtils.getOrderStatus(order.Status).text}</div>
-                        </div>
-                        <div>
-                            <strong>Клиент:</strong> ${order.ContactName || 'Не указан'}<br>
-                            <strong>Телефон:</strong> ${window.AppUtils.formatPhone(order.ContactPhone)}<br>
-                            <strong>Адрес:</strong> ${order.ServiceAddress || 'Не указан'}<br>
-                            <strong>Стоимость:</strong> ${order.FinalCost ? window.AppUtils.formatCurrency(order.FinalCost) : 'Не указана'}<br>
-                            <strong>Создан:</strong> ${window.AppUtils.formatDate(order.CreatedAt)}
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            async loadClients() {
-                try {
-                    const response = await this.apiRequest('/api/admin/clients');
-                    const clients = response.data || response || [];
-                    
-                    this.renderClients(clients);
-                } catch (error) {
-                    console.error('Ошибка загрузки клиентов:', error);
-                    this.showError('Ошибка загрузки клиентов');
-                }
-            }
-
-            renderClients(clients) {
-                const container = document.getElementById('clients-list');
-                
-                if (!clients || clients.length === 0) {
-                    container.innerHTML = '<div class="text-center">Клиентов пока нет</div>';
-                    return;
-                }
-
-                container.innerHTML = clients.map(client => `
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">${client.FirstName} ${client.LastName}</div>
-                            <div class="card-badge ${client.IsBlocked ? 'status-canceled' : 'status-completed'}">${client.IsBlocked ? 'Заблокирован' : 'Активен'}</div>
-                        </div>
-                        <div>
-                            <strong>Телефон:</strong> ${client.Phone || 'Не указан'}<br>
-                            <strong>Username:</strong> ${client.Nickname || 'Не указан'}<br>
-                            <strong>Роль:</strong> ${client.Role || 'user'}
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            loadProfile() {
-                const container = document.getElementById('profile-content');
-                
-                if (!this.user) {
-                    container.innerHTML = '<div>Ошибка загрузки профиля</div>';
-                    return;
-                }
-
-                container.innerHTML = `
-                    <div class="form-group">
-                        <label class="form-label">Имя</label>
-                        <div class="form-control" style="background: var(--bg-tertiary);">${this.user.FirstName || ''}</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Фамилия</label>
-                        <div class="form-control" style="background: var(--bg-tertiary);">${this.user.LastName || ''}</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Телефон</label>
-                        <div class="form-control" style="background: var(--bg-tertiary);">${this.user.Phone || 'Не указан'}</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Роль</label>
-                        <div class="form-control" style="background: var(--bg-tertiary);">${this.user.Role || ''}</div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">ID пользователя</label>
-                        <div class="form-control" style="background: var(--bg-tertiary);">${this.user.ID || ''}</div>
-                    </div>
-                `;
-            }
-
-
-
-            async apiRequest(endpoint, options = {}) {
-                const url = `${window.APP_CONFIG.API_BASE}${endpoint}`;
-                
-                const defaultOptions = {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Client-Version': window.APP_CONFIG.VERSION
-                    }
-                };
-
-                // Add Telegram auth if available
-                if (window.Telegram?.WebApp?.initData) {
-                    defaultOptions.headers['X-Telegram-Auth'] = window.Telegram.WebApp.initData;
-                }
-
-                const requestOptions = { ...defaultOptions, ...options };
-
-                try {
-                    const response = await fetch(url, requestOptions);
                     
                     if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        const error = await response.text();
+                        throw new Error(error || `HTTP ${response.status}`);
                     }
                     
                     const data = await response.json();
-                    
-                    // Handle API response format
-                    if (data.status === 'error') {
-                        throw new Error(data.message);
-                    }
-                    
-                    return data;
+                    return data.data || data;
                 } catch (error) {
-                    console.error('API Request failed:', endpoint, error);
+                    console.error('API Error:', error);
                     throw error;
                 }
-            }
-
-            startApp() {
-                // Hide loading screen
-                const loadingScreen = document.getElementById('loading-screen');
-                const app = document.getElementById('app');
-                
-                loadingScreen.classList.add('hidden');
-                app.classList.add('loaded');
-                
-                // Start periodic refresh
-                this.startPeriodicRefresh();
-                
-                console.log('✅ Сервис-Крым приложение запущено успешно!');
-            }
-
-            startPeriodicRefresh() {
-                if (this.refreshInterval) {
-                    clearInterval(this.refreshInterval);
+            },
+            
+            getProfile() {
+                const endpoint = this.debugMode ? '/test/profile' : '/user/profile';
+                return this.request(endpoint);
+            },
+            
+            getOrders(status = '', search = '') {
+                if (this.debugMode) {
+                    const params = new URLSearchParams();
+                    if (status) params.append('status', status);
+                    if (search) params.append('search', search);
+                    return this.request(`/test/orders?${params}`);
                 }
-                
-                this.refreshInterval = setInterval(() => {
-                    if (this.currentPanel === 'orders') {
-                        this.loadOrders();
-                    } else if (this.currentPanel === 'dashboard') {
-                        this.loadDashboardData();
-                    }
-                }, window.APP_CONFIG.REFRESH_INTERVAL);
-            }
-
-            showNotification(message, type = 'info') {
-                const container = document.getElementById('notifications');
-                const notification = document.createElement('div');
-                notification.className = `notification ${type}`;
-                notification.textContent = message;
-                
-                container.appendChild(notification);
-                
-                setTimeout(() => {
-                    notification.remove();
-                }, window.APP_CONFIG.NOTIFICATION_TIMEOUT);
-            }
-
-            showError(message) {
-                this.showNotification(message, 'error');
-            }
-
-            showSuccess(message) {
-                this.showNotification(message, 'success');
-            }
-
-            // Create order functionality
-            showCreateOrderModal() {
-                const modal = document.getElementById('order-modal');
-                const title = document.getElementById('order-modal-title');
-                const content = document.getElementById('order-modal-content');
-                
-                title.textContent = 'Создать новый заказ';
-                
-                content.innerHTML = `
-                    <form id="create-order-form">
-                        <div class="form-group">
-                            <label class="form-label">Имя клиента *</label>
-                            <input type="text" id="contact-name" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Телефон *</label>
-                            <input type="tel" id="contact-phone" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Адрес услуги *</label>
-                            <textarea id="service-address" class="form-control" rows="3" required></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Описание работ</label>
-                            <textarea id="description" class="form-control" rows="4" placeholder="Опишите что нужно сделать..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Тип услуги</label>
-                            <select id="service-type" class="form-control">
-                                <option value="">Выберите тип услуги</option>
-                                <option value="garbage_removal">Вывоз мусора</option>
-                                <option value="demolition">Демонтаж</option>
-                                <option value="cleaning">Уборка</option>
-                                <option value="other">Другое</option>
-                            </select>
-                        </div>
-                        ${this.user && ['operator', 'admin', 'owner'].includes(this.user.Role) ? `
-                        <div class="form-group">
-                            <label class="form-label">Стоимость (₽)</label>
-                            <input type="number" id="final-cost" class="form-control" min="0">
-                        </div>
-                        ` : ''}
-                        <div class="flex gap-10 mt-20">
-                            <button type="submit" class="btn btn-primary">Создать заказ</button>
-                            <button type="button" onclick="closeModal('order-modal')" class="btn btn-secondary">Отмена</button>
-                        </div>
-                    </form>
-                `;
-                
-                // Setup form handler
-                document.getElementById('create-order-form').addEventListener('submit', this.handleCreateOrder.bind(this));
-                
-                modal.classList.add('show');
-            }
-
-            async handleCreateOrder(event) {
-                event.preventDefault();
-                
-                const formData = {
-                    ContactName: document.getElementById('contact-name').value,
-                    ContactPhone: document.getElementById('contact-phone').value,
-                    ServiceAddress: document.getElementById('service-address').value,
-                    Description: document.getElementById('description').value,
-                    ServiceType: document.getElementById('service-type').value,
-                };
-                
-                // Add cost if user is operator/admin
-                const costInput = document.getElementById('final-cost');
-                if (costInput && costInput.value) {
-                    formData.FinalCost = parseFloat(costInput.value);
+                const endpoint = this.isAdminUser() ? '/admin/orders' : '/user/orders';
+                const params = new URLSearchParams();
+                if (status) params.append('status', status);
+                if (search) params.append('search', search);
+                return this.request(`${endpoint}?${params}`);
+            },
+            
+            getClients(search = '') {
+                if (this.debugMode) {
+                    const params = new URLSearchParams();
+                    if (search) params.append('search', search);
+                    return this.request(`/test/clients?${params}`);
                 }
-                
-                try {
-                    const endpoint = this.user && ['operator', 'admin', 'owner'].includes(this.user.Role) 
-                        ? '/api/admin/create-order' 
-                        : '/api/user/create-order';
-                    
-                    const response = await this.apiRequest(endpoint, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    this.showSuccess('Заказ успешно создан!');
-                    closeModal('order-modal');
-                    
-                    // Refresh orders if on orders panel
-                    if (this.currentPanel === 'orders') {
-                        await this.loadOrders();
-                    }
-                    
-                } catch (error) {
-                    console.error('Ошибка создания заказа:', error);
-                    this.showError('Ошибка создания заказа: ' + error.message);
+                const params = new URLSearchParams();
+                if (search) params.append('search', search);
+                return this.request(`/admin/clients?${params}`);
+            },
+            
+            getOrderDetails(orderId) {
+                if (this.debugMode) {
+                    return this.request(`/test/order/${orderId}`);
                 }
-            }
-
-            async showOrderDetailsModal(orderId) {
-                try {
-                    const endpoint = this.user && ['operator', 'admin', 'owner'].includes(this.user.Role) 
-                        ? `/api/admin/order/${orderId}` 
-                        : `/api/user/order/${orderId}`;
-                    
-                    const response = await this.apiRequest(endpoint);
-                    const order = response.data || response;
-                    
-                    const modal = document.getElementById('order-details-modal');
-                    const title = document.getElementById('order-details-title');
-                    const content = document.getElementById('order-details-content');
-                    
-                    title.textContent = `Заказ #${order.ID}`;
-                    
-                    const isOperator = this.user && ['operator', 'admin', 'owner'].includes(this.user.Role);
-                    const statusConfig = window.AppUtils.getOrderStatus(order.Status);
-                    
-                    content.innerHTML = `
-                        <div class="card-badge ${statusConfig.class} mb-20">${statusConfig.text}</div>
-                        
-                        <div class="grid grid-2">
-                            <div class="form-group">
-                                <label class="form-label">Клиент</label>
-                                <div class="form-control" style="background: var(--bg-tertiary);">${order.ContactName || 'Не указан'}</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Телефон</label>
-                                <div class="form-control" style="background: var(--bg-tertiary);">${window.AppUtils.formatPhone(order.ContactPhone)}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Адрес</label>
-                            <div class="form-control" style="background: var(--bg-tertiary);">${order.ServiceAddress || 'Не указан'}</div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Описание</label>
-                            <div class="form-control" style="background: var(--bg-tertiary); min-height: 80px;">${order.Description || 'Нет описания'}</div>
-                        </div>
-                        
-                        <div class="grid grid-2">
-                            <div class="form-group">
-                                <label class="form-label">Тип услуги</label>
-                                <div class="form-control" style="background: var(--bg-tertiary);">${order.ServiceType || 'Не указан'}</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Стоимость</label>
-                                <div class="form-control" style="background: var(--bg-tertiary);">${order.FinalCost ? window.AppUtils.formatCurrency(order.FinalCost) : 'Не указана'}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-2">
-                            <div class="form-group">
-                                <label class="form-label">Создан</label>
-                                <div class="form-control" style="background: var(--bg-tertiary);">${window.AppUtils.formatDate(order.CreatedAt)}</div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Обновлен</label>
-                                <div class="form-control" style="background: var(--bg-tertiary);">${window.AppUtils.formatDate(order.UpdatedAt)}</div>
-                            </div>
-                        </div>
-                        
-                        ${order.Photos && order.Photos.length > 0 ? `
-                        <div class="form-group">
-                            <label class="form-label">Фотографии</label>
-                            <div class="grid grid-3">
-                                ${order.Photos.map(photo => `
-                                    <img src="${photo}" alt="Фото заказа" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; cursor: pointer;" onclick="window.open('${photo}', '_blank')">
-                                `).join('')}
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        ${order.Videos && order.Videos.length > 0 ? `
-                        <div class="form-group">
-                            <label class="form-label">Видео</label>
-                            <div class="grid grid-2">
-                                ${order.Videos.map(video => `
-                                    <video controls style="width: 100%; height: 120px; border-radius: 8px;">
-                                        <source src="${video}" type="video/mp4">
-                                        Ваш браузер не поддерживает видео
-                                    </video>
-                                `).join('')}
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        ${isOperator ? `
-                        <div class="form-group">
-                            <label class="form-label">Действия с заказом</label>
-                            <div class="flex gap-10">
-                                ${order.Status === 'new' || order.Status === 'awaiting_cost' ? `
-                                    <button onclick="app.showSetCostModal(${order.ID})" class="btn btn-primary">Установить стоимость</button>
-                                ` : ''}
-                                ${order.Status === 'inprogress' ? `
-                                    <button onclick="app.confirmOrderAction(${order.ID}, 'complete')" class="btn btn-success">Выполнен</button>
-                                ` : ''}
-                                ${order.Status !== 'completed' && order.Status !== 'canceled' ? `
-                                    <button onclick="app.showCancelOrderModal(${order.ID})" class="btn btn-danger">Отменить</button>
-                                ` : ''}
-                                <button onclick="app.showMediaModal(${order.ID})" class="btn btn-secondary">Добавить файлы</button>
-                            </div>
-                        </div>
-                        ` : ''}
-                        
-                        <div class="flex gap-10 mt-20">
-                            <button onclick="closeModal('order-details-modal')" class="btn btn-secondary">Закрыть</button>
-                        </div>
-                    `;
-                    
-                    modal.classList.add('show');
-                    
-                } catch (error) {
-                    console.error('Ошибка загрузки деталей заказа:', error);
-                    this.showError('Ошибка загрузки деталей заказа');
-                }
-            }
-
-            showSetCostModal(orderId) {
-                this.confirmAction(
-                    'Установить стоимость', 
-                    `
-                    <div class="form-group">
-                        <label class="form-label">Стоимость заказа (₽)</label>
-                        <input type="number" id="cost-input" class="form-control" min="0" required>
-                    </div>
-                    `,
-                    async () => {
-                        const cost = document.getElementById('cost-input').value;
-                        if (!cost || isNaN(cost) || cost <= 0) {
-                            this.showError('Введите корректную стоимость');
-                            return;
-                        }
-                        
-                        try {
-                            await this.apiRequest(`/api/admin/order/${orderId}/action`, {
-                                method: 'POST',
-                                body: { action: 'set_cost', cost: parseFloat(cost) }
-                            });
-                            
-                            this.showSuccess('Стоимость установлена');
-                            closeModal('order-details-modal');
-                            if (this.currentPanel === 'orders') {
-                                await this.loadOrders();
-                            }
-                        } catch (error) {
-                            this.showError('Ошибка установки стоимости: ' + error.message);
-                        }
-                    }
-                );
-            }
-
-            showCancelOrderModal(orderId) {
-                this.confirmAction(
-                    'Отменить заказ',
-                    `
-                    <div class="form-group">
-                        <label class="form-label">Причина отмены</label>
-                        <textarea id="cancel-reason" class="form-control" rows="3" required placeholder="Укажите причину отмены заказа..."></textarea>
-                    </div>
-                    `,
-                    async () => {
-                        const reason = document.getElementById('cancel-reason').value.trim();
-                        if (!reason) {
-                            this.showError('Укажите причину отмены');
-                            return;
-                        }
-                        
-                        try {
-                            await this.apiRequest(`/api/admin/order/${orderId}/action`, {
-                                method: 'POST',
-                                body: { action: 'cancel', reason: reason }
-                            });
-                            
-                            this.showSuccess('Заказ отменен');
-                            closeModal('order-details-modal');
-                            if (this.currentPanel === 'orders') {
-                                await this.loadOrders();
-                            }
-                        } catch (error) {
-                            this.showError('Ошибка отмены заказа: ' + error.message);
-                        }
-                    }
-                );
-            }
-
-            async confirmOrderAction(orderId, action) {
-                const actionTexts = {
-                    'complete': 'Отметить заказ как выполненный?',
-                    'accept': 'Принять заказ в работу?',
-                    'reject': 'Отклонить заказ?'
-                };
-                
-                this.confirmAction(
-                    'Подтверждение действия',
-                    `<p>${actionTexts[action] || 'Выполнить действие?'}</p>`,
-                    async () => {
-                        try {
-                            await this.apiRequest(`/api/admin/order/${orderId}/action`, {
-                                method: 'POST',
-                                body: { action: action }
-                            });
-                            
-                            this.showSuccess('Действие выполнено успешно');
-                            closeModal('order-details-modal');
-                            if (this.currentPanel === 'orders') {
-                                await this.loadOrders();
-                            }
-                        } catch (error) {
-                            this.showError('Ошибка выполнения действия: ' + error.message);
-                        }
-                    }
-                );
-            }
-
-            showMediaModal(orderId) {
-                const modal = document.getElementById('media-modal');
-                modal.dataset.orderId = orderId;
-                
-                // Reset file input and preview
-                document.getElementById('media-input').value = '';
-                document.getElementById('media-preview').innerHTML = '';
-                
-                // Setup file input handler
-                document.getElementById('media-input').addEventListener('change', this.handleFilePreview.bind(this));
-                document.getElementById('upload-media-btn').onclick = () => this.handleMediaUpload(orderId);
-                
-                modal.classList.add('show');
-            }
-
-            handleFilePreview(event) {
-                const files = event.target.files;
-                const preview = document.getElementById('media-preview');
-                preview.innerHTML = '';
-                
-                Array.from(files).forEach((file, index) => {
-                    const isImage = file.type.startsWith('image/');
-                    const isVideo = file.type.startsWith('video/');
-                    
-                    if (isImage || isVideo) {
-                        const div = document.createElement('div');
-                        div.style.cssText = 'display: inline-block; margin: 10px; text-align: center;';
-                        
-                        if (isImage) {
-                            const img = document.createElement('img');
-                            img.style.cssText = 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px;';
-                            img.src = URL.createObjectURL(file);
-                            div.appendChild(img);
-                        } else if (isVideo) {
-                            const video = document.createElement('video');
-                            video.style.cssText = 'width: 100px; height: 100px; object-fit: cover; border-radius: 8px;';
-                            video.src = URL.createObjectURL(file);
-                            video.controls = false;
-                            div.appendChild(video);
-                        }
-                        
-                        const name = document.createElement('div');
-                        name.style.cssText = 'font-size: 12px; margin-top: 5px; color: var(--text-muted);';
-                        name.textContent = file.name.length > 15 ? file.name.substring(0, 15) + '...' : file.name;
-                        div.appendChild(name);
-                        
-                        preview.appendChild(div);
-                    }
+                const endpoint = this.isAdminUser() ? `/admin/order/${orderId}` : `/user/order/${orderId}`;
+                return this.request(endpoint);
+            },
+            
+            createOrder(orderData) {
+                const endpoint = this.isAdminUser() ? '/admin/create-order' : '/user/create-order';
+                return this.request(endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify(orderData)
                 });
+            },
+            
+            updateOrderAction(orderId, action, data = {}) {
+                const endpoint = this.isAdminUser() ? `/admin/order/${orderId}/action` : `/user/order/${orderId}/action`;
+                return this.request(endpoint, {
+                    method: 'POST',
+                    body: JSON.stringify({ action, ...data })
+                });
+            },
+            
+            isAdminUser() {
+                return currentUser && (currentUser.Role === 'owner' || currentUser.Role === 'operator');
             }
-
-            async handleMediaUpload(orderId) {
-                const fileInput = document.getElementById('media-input');
-                const files = fileInput.files;
+        };
+        
+        // UI модуль
+        const UI = {
+            init() {
+                this.attachEventListeners();
+                this.loadInitialData();
+            },
+            
+            attachEventListeners() {
+                // Навигация
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const panel = item.dataset.panel;
+                        if (panel) this.showPanel(panel);
+                    });
+                });
                 
-                if (files.length === 0) {
-                    this.showError('Выберите файлы для загрузки');
+                // Поиск заказов
+                const ordersSearch = document.getElementById('orders-search');
+                let searchTimeout;
+                ordersSearch?.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        this.loadOrders(this.getActiveFilter(), e.target.value);
+                    }, 300);
+                });
+                
+                // Фильтры заказов
+                document.querySelectorAll('#orders-filters .chip').forEach(chip => {
+                    chip.addEventListener('click', () => {
+                        document.querySelectorAll('#orders-filters .chip').forEach(c => c.classList.remove('active'));
+                        chip.classList.add('active');
+                        this.loadOrders(chip.dataset.status);
+                    });
+                });
+                
+                // Поиск клиентов
+                const clientsSearch = document.getElementById('clients-search');
+                clientsSearch?.addEventListener('input', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        this.loadClients(e.target.value);
+                    }, 300);
+                });
+                
+                // Закрытие модального окна по клику на фон
+                document.getElementById('modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'modal') this.closeModal();
+                });
+            },
+            
+            async loadInitialData() {
+                try {
+                    await this.loadProfile();
+                    this.updateUIForRole();
+                    // Небольшая задержка для плавности
+                    setTimeout(() => this.showPanel('orders'), 100);
+                } catch (error) {
+                    this.showToast('Ошибка загрузки данных', 'error');
+                }
+            },
+            
+            showPanel(panelName) {
+                // Плавное переключение панелей
+                const panels = document.querySelectorAll('.panel');
+                const targetPanel = document.getElementById(`${panelName}-panel`);
+                
+                // Если панель уже активна, ничего не делаем
+                if (targetPanel && targetPanel.classList.contains('active')) {
                     return;
                 }
                 
-                const uploadBtn = document.getElementById('upload-media-btn');
-                uploadBtn.disabled = true;
-                uploadBtn.textContent = 'Загружается...';
+                // Скрываем текущую панель
+                panels.forEach(panel => {
+                    if (panel.classList.contains('active')) {
+                        panel.classList.remove('active');
+                    }
+                });
                 
-                try {
-                    const uploadedFiles = { photos: [], videos: [] };
-                    
-                    for (const file of files) {
-                        const formData = new FormData();
-                        formData.append('media', file);
-                        
-                        const response = await fetch(`${window.APP_CONFIG.API_BASE}/api/upload-media`, {
-                            method: 'POST',
-                            headers: {
-                                'X-Telegram-Auth': window.Telegram?.WebApp?.initData || ''
-                            },
-                            body: formData
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                        }
-                        
-                        const result = await response.json();
-                        if (result.status === 'error') {
-                            throw new Error(result.message);
-                        }
-                        
-                        const fileData = result.data || result;
-                        if (fileData.type === 'video') {
-                            uploadedFiles.videos.push(fileData.file_id);
-                        } else {
-                            uploadedFiles.photos.push(fileData.file_id);
-                        }
+                // Показываем новую панель с задержкой
+                setTimeout(() => {
+                    if (targetPanel) {
+                        targetPanel.style.display = 'block';
+                        // Форсируем reflow для анимации
+                        targetPanel.offsetHeight;
+                        targetPanel.classList.add('active');
                     }
                     
-                    // Add media to order
-                    await this.apiRequest(`/api/admin/order/${orderId}/add-media`, {
-                        method: 'POST',
-                        body: uploadedFiles
+                    // Обновляем навигацию
+                    document.querySelectorAll('.nav-item').forEach(item => {
+                        item.classList.remove('active');
                     });
+                    document.querySelector(`.nav-item[data-panel="${panelName}"]`)?.classList.add('active');
                     
-                    this.showSuccess('Файлы успешно загружены');
-                    closeModal('media-modal');
+                    currentPanel = panelName;
+                    
+                    // Загружаем данные
+                    switch(panelName) {
+                        case 'orders':
+                            this.loadOrders();
+                            break;
+                        case 'clients':
+                            this.loadClients();
+                            break;
+                        case 'profile':
+                            this.animateProfile();
+                            this.updateProfileStats();
+                            break;
+                    }
+                }, 50);
+            },
+            
+            async loadProfile() {
+                try {
+                    const profile = await API.getProfile();
+                    currentUser = profile;
+                    
+                    // Обновляем UI профиля
+                    const fullName = `${profile.FirstName} ${profile.LastName || ''}`.trim();
+                    document.getElementById('profile-name').textContent = fullName;
+                    document.getElementById('profile-id').textContent = `#${profile.ID}`;
+                    document.getElementById('profile-phone').textContent = this.formatPhone(profile.Phone);
+                    document.getElementById('profile-username').textContent = 
+                        profile.Username ? `@${profile.Username}` : 'Не указан';
+                    document.getElementById('profile-created').textContent = 
+                        new Date(profile.CreatedAt).toLocaleDateString('ru-RU', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    
+                    // Аватар
+                    const avatar = document.getElementById('profile-avatar');
+                    if (profile.FirstName) {
+                        avatar.innerHTML = profile.FirstName.charAt(0).toUpperCase();
+                    }
+                    
+                    // Роль
+                    const roleContainer = document.getElementById('profile-role');
+                    roleContainer.innerHTML = `
+                        <div class="role-badge ${profile.Role}">
+                            <i class="fas fa-${this.getRoleIcon(profile.Role)}"></i>
+                            ${this.getRoleText(profile.Role)}
+                        </div>
+                    `;
+                    
+                    // Действия для разных ролей
+                    this.renderProfileActions(profile.Role);
                     
                 } catch (error) {
-                    console.error('Ошибка загрузки файлов:', error);
-                    this.showError('Ошибка загрузки файлов: ' + error.message);
-                } finally {
-                    uploadBtn.disabled = false;
-                    uploadBtn.textContent = 'Загрузить';
+                    console.error('Error loading profile:', error);
+                    this.showToast('Ошибка загрузки профиля', 'error');
                 }
-            }
-
-            confirmAction(title, content, onConfirm) {
-                const modal = document.getElementById('confirm-modal');
-                const titleElement = document.getElementById('confirm-title');
-                const contentElement = document.getElementById('confirm-content');
+            },
+            
+            updateUIForRole() {
+                const isAdmin = API.isAdminUser();
+                const clientsNav = document.getElementById('clients-nav');
                 
-                titleElement.textContent = title;
+                if (!isAdmin) {
+                    clientsNav.style.display = 'none';
+                    document.getElementById('orders-subtitle').textContent = 'Ваши активные заказы';
+                } else {
+                    clientsNav.style.display = 'flex';
+                    document.getElementById('orders-subtitle').textContent = 'Система управления заказами';
+                }
+            },
+            
+            async loadOrders(status = '', search = '') {
+                const container = document.getElementById('orders-list');
+                container.innerHTML = this.getLoadingHTML();
                 
-                // Replace the content but keep the buttons
-                contentElement.innerHTML = `
-                    ${content}
-                    <div class="flex gap-10 mt-20">
-                        <button id="confirm-yes-btn" class="btn btn-primary">Да</button>
-                        <button onclick="closeModal('confirm-modal')" class="btn btn-secondary">Нет</button>
+                try {
+                    const response = await API.getOrders(status, search);
+                    const orders = Array.isArray(response) ? response : (response.orders || response || []);
+                    ordersCache = orders;
+                    
+                    if (orders.length === 0) {
+                        container.innerHTML = this.getEmptyStateHTML('robot', 'Заказов не найдено');
+                        return;
+                    }
+                    
+                    container.innerHTML = orders.map((order, index) => this.renderOrderCard(order, index)).join('');
+                    this.animateElements(container.querySelectorAll('.card'));
+                    
+                    // Обновляем счетчик
+                    const activeCount = orders.filter(o => 
+                        ['new', 'in_progress', 'awaiting_confirmation', 'awaiting_payment'].includes(o.Status)
+                    ).length;
+                    this.updateBadge('orders-badge', activeCount);
+                    
+                } catch (error) {
+                    container.innerHTML = this.getErrorHTML('Ошибка загрузки данных');
+                }
+            },
+            
+            async loadClients(search = '') {
+                const container = document.getElementById('clients-list');
+                container.innerHTML = this.getLoadingHTML();
+                
+                try {
+                    const response = await API.getClients(search);
+                    const clients = response.data || response || [];
+                    clientsCache = clients;
+                    
+                    if (clients.length === 0) {
+                        container.innerHTML = this.getEmptyStateHTML('users', 'Пользователей не найдено');
+                        return;
+                    }
+                    
+                    container.innerHTML = clients.map((client, index) => this.renderClientCard(client, index)).join('');
+                    this.animateElements(container.querySelectorAll('.card'));
+                    
+                } catch (error) {
+                    container.innerHTML = this.getErrorHTML('Ошибка загрузки данных');
+                }
+            },
+            
+            renderOrderCard(order, index) {
+                const delay = index * 50;
+                const statusIcon = this.getStatusIcon(order.Status);
+                const clientName = order.ClientName || order.ClientFirstName || 'Клиент';
+                const serviceType = order.ServiceType || 'Услуга не указана';
+                const price = order.Price ? this.formatCurrency(order.Price) : '';
+                const date = new Date(order.CreatedAt);
+                
+                return `
+                    <div class="card" onclick="UI.showOrderDetails(${order.ID})" style="animation-delay: ${delay}ms" data-animate>
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title">Заказ #${order.ID}</div>
+                                <div class="card-subtitle">${clientName}</div>
+                            </div>
+                            <div class="status-badge ${order.Status}">
+                                <i class="fas fa-${statusIcon}"></i>
+                                ${this.getStatusText(order.Status)}
+                            </div>
+                        </div>
+                        <div class="card-info">
+                            <div class="info-row">
+                                <i class="fas fa-cog"></i>
+                                <span>${serviceType}</span>
+                            </div>
+                            <div class="info-row">
+                                <i class="fas fa-calendar-check"></i>
+                                <span>${date.toLocaleDateString('ru-RU')} в ${date.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}</span>
+                            </div>
+                            ${price ? `
+                                <div class="info-row">
+                                    <i class="fas fa-wallet"></i>
+                                    <span>${price}</span>
+                                </div>
+                            ` : ''}
+                            ${order.OperatorName ? `
+                                <div class="info-row">
+                                    <i class="fas fa-headset"></i>
+                                    <span>Оператор: ${order.OperatorName}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            },
+            
+            renderClientCard(client, index) {
+                const delay = index * 50;
+                const roleIcon = this.getRoleIcon(client.Role);
+                const avatar = client.FirstName ? client.FirstName.charAt(0).toUpperCase() : '?';
+                const createdDate = new Date(client.CreatedAt);
+                const orderCount = client.OrderCount || 0;
+                
+                return `
+                    <div class="card" onclick="UI.showClientDetails(${client.ID})" style="animation-delay: ${delay}ms" data-animate>
+                        <div class="card-header">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, var(--accent), var(--accent-hover)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px; box-shadow: 0 0 20px var(--accent-glow);">
+                                    ${avatar}
+                                </div>
+                                <div>
+                                    <div class="card-title">${client.FirstName} ${client.LastName || ''}</div>
+                                    <div class="role-badge ${client.Role}" style="font-size: 14px;">
+                                        <i class="fas fa-${roleIcon}"></i>
+                                        ${this.getRoleText(client.Role)}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="status-badge ${client.IsBlocked ? 'blocked' : 'active'}">
+                                <i class="fas fa-${client.IsBlocked ? 'lock' : 'shield-alt'}"></i>
+                                ${client.IsBlocked ? 'Заблокирован' : 'Активен'}
+                            </div>
+                        </div>
+                        <div class="card-info">
+                            <div class="info-row">
+                                <i class="fas fa-phone-alt"></i>
+                                <span>${this.formatPhone(client.Phone)}</span>
+                            </div>
+                            ${client.Username ? `
+                                <div class="info-row">
+                                    <i class="fas fa-at"></i>
+                                    <span>@${client.Username}</span>
+                                </div>
+                            ` : ''}
+                            ${client.CardNumber ? `
+                                <div class="info-row">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span><strong>Карта:</strong> ${this.maskCard(client.CardNumber)}</span>
+                                </div>
+                            ` : ''}
+                            <div class="info-row">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span><strong>Регистрация:</strong> ${new Date(client.CreatedAt).toLocaleDateString('ru-RU', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}</span>
+                            </div>
+                            <div class="info-row">
+                                <i class="fas fa-${client.IsBlocked ? 'lock' : 'shield-alt'}"></i>
+                                <span><strong>Статус:</strong> <span style="color: ${client.IsBlocked ? 'var(--danger)' : 'var(--success)'}">${client.IsBlocked ? 'Заблокирован' : 'Активен'}</span></span>
+                            </div>
+                            ${client.BlockReason ? `
+                                <div class="info-row">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span><strong>Причина блокировки:</strong> ${client.BlockReason}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${API.isAdminUser() ? `
+                            <div style="margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                <button class="btn" onclick="UI.showClientOrders(${client.ID})">
+                                    <i class="fas fa-list"></i>
+                                    Заказы клиента
+                                </button>
+                                <button class="btn btn-secondary" onclick="UI.editClient(${client.ID})">
+                                    <i class="fas fa-edit"></i>
+                                    Редактировать
+                                </button>
+                                <button class="btn ${client.IsBlocked ? 'btn-success' : 'btn-danger'}" onclick="UI.toggleClientBlock(${client.ID})">
+                                    <i class="fas fa-${client.IsBlocked ? 'unlock' : 'lock'}"></i>
+                                    ${client.IsBlocked ? 'Разблокировать' : 'Заблокировать'}
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            },
+            
+            renderProfileActions(role) {
+                const container = document.getElementById('profile-actions');
+                let actions = [];
+                
+                switch(role) {
+                    case 'owner':
+                        actions = [
+                            { icon: 'chart-line', title: 'Аналитика', desc: 'Статистика бизнеса', action: 'showStats', color: 'var(--accent)' },
+                            { icon: 'users-cog', title: 'Команда', desc: 'Управление ролями', action: 'manageUsers', color: 'var(--warning)' },
+                            { icon: 'sliders-h', title: 'Настройки', desc: 'Параметры системы', action: 'settings', color: 'var(--success)' },
+                            { icon: 'file-invoice-dollar', title: 'Финансы', desc: 'Отчеты и платежи', action: 'reports', color: 'var(--danger)' }
+                        ];
+                        break;
+                    case 'operator':
+                        actions = [
+                            { icon: 'plus-circle', title: 'Создать', desc: 'Новый заказ', action: 'createOrder', color: 'var(--accent)' },
+                            { icon: 'chart-bar', title: 'Статистика', desc: 'Моя эффективность', action: 'myStats', color: 'var(--success)' },
+                            { icon: 'history', title: 'История', desc: 'Журнал действий', action: 'history', color: 'var(--warning)' },
+                            { icon: 'headset', title: 'Поддержка', desc: 'Связь с админом', action: 'support', color: 'var(--danger)' }
+                        ];
+                        break;
+                    case 'driver':
+                        actions = [
+                            { icon: 'route', title: 'Маршруты', desc: 'Активные задачи', action: 'routes', color: 'var(--accent)' },
+                            { icon: 'gas-pump', title: 'Расходы', desc: 'Учет топлива', action: 'expenses', color: 'var(--warning)' },
+                            { icon: 'file-alt', title: 'Отчеты', desc: 'Документы', action: 'driverReports', color: 'var(--success)' },
+                            { icon: 'phone-alt', title: 'Диспетчер', desc: 'Быстрая связь', action: 'dispatcher', color: 'var(--danger)' }
+                        ];
+                        break;
+                    default:
+                        actions = [
+                            { icon: 'plus-circle', title: 'Заказать', desc: 'Новая услуга', action: 'createOrder', color: 'var(--accent)' },
+                            { icon: 'history', title: 'История', desc: 'Мои заказы', action: 'orderHistory', color: 'var(--success)' },
+                            { icon: 'star', title: 'Отзывы', desc: 'Оценить сервис', action: 'feedback', color: 'var(--warning)' },
+                            { icon: 'question-circle', title: 'Помощь', desc: 'FAQ и поддержка', action: 'help', color: 'var(--danger)' }
+                        ];
+                }
+                
+                container.innerHTML = actions.map((action, index) => `
+                    <div class="action-card" onclick="UI.handleAction('${action.action}')" style="animation-delay: ${index * 100}ms">
+                        <i class="fas fa-${action.icon}" style="color: ${action.color}; animation-delay: ${index * 200}ms"></i>
+                        <h3>${action.title}</h3>
+                        <p>${action.desc}</p>
+                    </div>
+                `).join('');
+            },
+            
+            async showOrderDetails(orderId) {
+                try {
+                    const order = await API.getOrderDetails(orderId);
+                    const isAdmin = API.isAdminUser();
+                    
+                    let content = `
+                        <div class="order-details">
+                            <div class="status-badge ${order.Status}" style="margin-bottom: 24px; font-size: 16px;">
+                                <i class="fas fa-${this.getStatusIcon(order.Status)}"></i>
+                                ${this.getStatusText(order.Status)}
+                            </div>
+                            
+                            <h3>Информация о заказе</h3>
+                            <div class="card" style="margin-bottom: 24px;">
+                                <div class="info-row">
+                                    <i class="fas fa-hashtag"></i>
+                                    <span><strong>Номер заказа:</strong> #${order.ID}</span>
+                                </div>
+                                <div class="info-row">
+                                    <i class="fas fa-user"></i>
+                                    <span><strong>Клиент:</strong> ${order.ClientName || order.ClientFirstName || 'Не указан'}</span>
+                                </div>
+                                ${order.ClientPhone ? `
+                                    <div class="info-row">
+                                        <i class="fas fa-phone-alt"></i>
+                                        <span><strong>Телефон:</strong> ${this.formatPhone(order.ClientPhone)}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="info-row">
+                                    <i class="fas fa-cog"></i>
+                                    <span><strong>Услуга:</strong> ${order.ServiceType || 'Не указана'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span><strong>Создан:</strong> ${new Date(order.CreatedAt).toLocaleString('ru-RU')}</span>
+                                </div>
+                                ${order.Price ? `
+                                    <div class="info-row">
+                                        <i class="fas fa-wallet"></i>
+                                        <span><strong>Стоимость:</strong> ${this.formatCurrency(order.Price)}</span>
+                                    </div>
+                                ` : ''}
+                                ${order.Payment ? `
+                                    <div class="info-row">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span><strong>Оплата:</strong> ${order.Payment === 'now' ? 'Сразу' : 'После выполнения'}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            
+                            ${order.Description ? `
+                                <h3>Описание</h3>
+                                <div class="card" style="margin-bottom: 24px;">
+                                    <p style="line-height: 1.6;">${order.Description}</p>
+                                </div>
+                            ` : ''}
+                            
+                            ${order.Notes ? `
+                                <h3>Примечания</h3>
+                                <div class="card" style="margin-bottom: 24px;">
+                                    <p style="line-height: 1.6;">${order.Notes}</p>
+                                </div>
+                            ` : ''}
+                            
+                            ${this.renderOrderActions(order, isAdmin)}
+                        </div>
+                    `;
+                    
+                    this.showModal(`Заказ #${order.ID}`, content);
+                } catch (error) {
+                    this.showToast('Ошибка загрузки заказа', 'error');
+                }
+            },
+            
+            renderOrderActions(order, isAdmin) {
+                let actions = [];
+                
+                if (isAdmin) {
+                    switch(order.Status) {
+                        case 'new':
+                            actions.push(
+                                { text: 'Принять в работу', icon: 'play', class: 'btn-success', action: 'accept' },
+                                { text: 'Отменить', icon: 'times', class: 'btn-danger', action: 'cancel' }
+                            );
+                            break;
+                        case 'in_progress':
+                            actions.push(
+                                { text: 'Завершить', icon: 'check', class: 'btn-success', action: 'complete' },
+                                { text: 'Отменить', icon: 'times', class: 'btn-danger', action: 'cancel' }
+                            );
+                            break;
+                        case 'canceled':
+                            actions.push(
+                                { text: 'Возобновить', icon: 'redo', class: 'btn', action: 'resume' }
+                            );
+                            break;
+                    }
+                } else {
+                    switch(order.Status) {
+                        case 'awaiting_confirmation':
+                            actions.push(
+                                { text: 'Принять стоимость', icon: 'check', class: 'btn-success', action: 'accept_cost' },
+                                { text: 'Отклонить', icon: 'times', class: 'btn-danger', action: 'reject_cost' }
+                            );
+                            break;
+                        case 'new':
+                        case 'awaiting_cost':
+                            actions.push(
+                                { text: 'Отменить заказ', icon: 'times', class: 'btn-danger', action: 'cancel_by_user' }
+                            );
+                            break;
+                        case 'awaiting_payment':
+                            actions.push(
+                                { text: 'Оплатить', icon: 'credit-card', class: 'btn-success', action: 'pay' }
+                            );
+                            break;
+                    }
+                }
+                
+                if (actions.length === 0) return '';
+                
+                return `
+                    <div class="order-actions">
+                        ${actions.map(action => `
+                            <button class="btn ${action.class}" onclick="UI.handleOrderAction(${order.ID}, '${action.action}')">
+                                <i class="fas fa-${action.icon}"></i>
+                                ${action.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            },
+            
+            async handleOrderAction(orderId, action) {
+                try {
+                    let data = {};
+                    
+                    if (action === 'cancel' || action === 'reject_cost' || action === 'cancel_by_user') {
+                        const reason = prompt('Укажите причину:');
+                        if (!reason) return;
+                        data.reason = reason;
+                    }
+                    
+                    if (action === 'pay') {
+                        this.showToast('Функция оплаты в разработке', 'warning');
+                        return;
+                    }
+                    
+                    const result = await API.updateOrderAction(orderId, action, data);
+                    this.showToast('Действие выполнено успешно', 'success');
+                    this.closeModal();
+                    this.loadOrders();
+                } catch (error) {
+                    this.showToast('Ошибка выполнения действия', 'error');
+                }
+            },
+            
+            showClientDetails(clientId) {
+                const client = clientsCache.find(c => c.ID === clientId);
+                if (!client) return;
+                
+                const content = `
+                    <div class="client-details">
+                        <div style="text-align: center; margin-bottom: 32px;">
+                            <div style="width: 100px; height: 100px; background: linear-gradient(135deg, var(--accent), var(--accent-hover)); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: 700; margin: 0 auto 20px; box-shadow: 0 0 40px var(--accent-glow);">
+                                ${client.FirstName.charAt(0).toUpperCase()}
+                            </div>
+                            <h2 style="font-size: 28px; margin-bottom: 12px;">${client.FirstName} ${client.LastName || ''}</h2>
+                            <div class="role-badge ${client.Role}" style="font-size: 14px;">
+                                <i class="fas fa-${this.getRoleIcon(client.Role)}"></i>
+                                ${this.getRoleText(client.Role)}
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="info-row">
+                                <i class="fas fa-fingerprint"></i>
+                                <span><strong>ID:</strong> #${client.ID}</span>
+                            </div>
+                            <div class="info-row">
+                                <i class="fas fa-phone-alt"></i>
+                                <span><strong>Телефон:</strong> ${this.formatPhone(client.Phone)}</span>
+                            </div>
+                            ${client.Username ? `
+                                <div class="info-row">
+                                    <i class="fas fa-at"></i>
+                                    <span><strong>Username:</strong> @${client.Username}</span>
+                                </div>
+                            ` : ''}
+                            ${client.CardNumber ? `
+                                <div class="info-row">
+                                    <i class="fas fa-credit-card"></i>
+                                    <span><strong>Карта:</strong> ${this.maskCard(client.CardNumber)}</span>
+                                </div>
+                            ` : ''}
+                            <div class="info-row">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span><strong>Регистрация:</strong> ${new Date(client.CreatedAt).toLocaleDateString('ru-RU', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}</span>
+                            </div>
+                            <div class="info-row">
+                                <i class="fas fa-${client.IsBlocked ? 'lock' : 'shield-alt'}"></i>
+                                <span><strong>Статус:</strong> <span style="color: ${client.IsBlocked ? 'var(--danger)' : 'var(--success)'}">${client.IsBlocked ? 'Заблокирован' : 'Активен'}</span></span>
+                            </div>
+                            ${client.BlockReason ? `
+                                <div class="info-row">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span><strong>Причина блокировки:</strong> ${client.BlockReason}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        ${API.isAdminUser() ? `
+                            <div style="margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                <button class="btn" onclick="UI.showClientOrders(${client.ID})">
+                                    <i class="fas fa-list"></i>
+                                    Заказы клиента
+                                </button>
+                                <button class="btn btn-secondary" onclick="UI.editClient(${client.ID})">
+                                    <i class="fas fa-edit"></i>
+                                    Редактировать
+                                </button>
+                                <button class="btn ${client.IsBlocked ? 'btn-success' : 'btn-danger'}" onclick="UI.toggleClientBlock(${client.ID})">
+                                    <i class="fas fa-${client.IsBlocked ? 'unlock' : 'lock'}"></i>
+                                    ${client.IsBlocked ? 'Разблокировать' : 'Заблокировать'}
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
                 
-                document.getElementById('confirm-yes-btn').onclick = () => {
-                    closeModal('confirm-modal');
-                    onConfirm();
+                this.showModal('Карточка клиента', content);
+            },
+            
+            handleAction(action) {
+                switch(action) {
+                    case 'createOrder':
+                        this.showToast('Открытие формы создания заказа...', 'info');
+                        // this.showCreateOrderForm();
+                        break;
+                    case 'showStats':
+                        this.showToast('Загрузка статистики...', 'info');
+                        // this.showStatistics();
+                        break;
+                    case 'orderHistory':
+                        this.showPanel('orders');
+                        break;
+                    default:
+                        this.showToast('Функция в разработке', 'warning');
+                }
+            },
+            
+            showModal(title, content) {
+                document.getElementById('modal-title').textContent = title;
+                document.getElementById('modal-body').innerHTML = content;
+                document.getElementById('modal').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            },
+            
+            closeModal() {
+                document.getElementById('modal').classList.remove('active');
+                document.body.style.overflow = '';
+            },
+            
+            showToast(message, type = 'info') {
+                const toast = document.getElementById('toast');
+                const icon = document.getElementById('toast-icon');
+                const msg = document.getElementById('toast-message');
+                
+                // Иконки для разных типов
+                const icons = {
+                    success: 'check-circle',
+                    error: 'exclamation-triangle',
+                    warning: 'exclamation-circle',
+                    info: 'info-circle'
                 };
                 
-                modal.classList.add('show');
-            }
-        }
-
-        // Global functions
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.remove('show');
-        }
-
-        // Logo animation setup
-        function setupLogoAnimation() {
-            const logoElement = document.querySelector('.service-crimea-animated');
-            const subtitleElement = document.querySelector('.service-subtitle');
-            
-            if (!logoElement) return;
-            
-            // Start the entrance animation
-            console.log('🎬 Starting logo entrance animation');
-            
-            // After main logo animation completes, make it static
-            setTimeout(() => {
-                logoElement.classList.add('loaded');
-                console.log('✅ Logo animation completed - now static with construction colors');
-            }, 3000); // 0.5s delay + 2.5s animation = 3s total
-            
-            // After subtitle animation completes, make it static
-            if (subtitleElement) {
+                // Сначала скрываем если уже показан
+                toast.classList.remove('show');
+                
                 setTimeout(() => {
-                    subtitleElement.classList.add('loaded');
-                    console.log('✅ Subtitle letter-by-letter animation completed - now static');
-                }, 7500); // 6.85s последняя буква + 0.6s анимация + 0.05s буфер = 7.5s total
+                    toast.className = `toast ${type}`;
+                    icon.className = `fas fa-${icons[type]}`;
+                    msg.textContent = message;
+                    toast.classList.add('show');
+                    
+                    setTimeout(() => {
+                        toast.classList.remove('show');
+                    }, 3000);
+                }, 100);
+            },
+            
+            updateBadge(badgeId, count) {
+                const badge = document.getElementById(badgeId);
+                if (badge) {
+                    badge.textContent = count > 99 ? '99+' : count;
+                    badge.classList.toggle('hidden', count === 0);
+                }
+            },
+            
+            async updateProfileStats() {
+                if (!ordersCache.length) {
+                    try {
+                        const response = await API.getOrders();
+                        ordersCache = Array.isArray(response) ? response : (response.orders || response || []);
+                    } catch (error) {
+                        console.error('Error loading orders for stats:', error);
+                    }
+                }
+                
+                const stats = {
+                    total: ordersCache.length,
+                    active: ordersCache.filter(o => ['new', 'in_progress', 'awaiting_confirmation', 'awaiting_payment'].includes(o.Status)).length,
+                    completed: ordersCache.filter(o => o.Status === 'completed').length
+                };
+                
+                // Анимированное обновление счетчиков
+                this.animateValue('stat-orders', 0, stats.total, 1000);
+                this.animateValue('stat-active', 0, stats.active, 1200);
+                this.animateValue('stat-completed', 0, stats.completed, 1400);
+            },
+            
+            animateValue(id, start, end, duration) {
+                const element = document.getElementById(id);
+                if (!element) return;
+                
+                const range = end - start;
+                const startTime = Date.now();
+                
+                const update = () => {
+                    const current = Date.now();
+                    const elapsed = current - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Easing function
+                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                    const value = Math.floor(start + range * easeOutQuart);
+                    
+                    element.textContent = value;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(update);
+                    }
+                };
+                
+                requestAnimationFrame(update);
+            },
+            
+            animateProfile() {
+                const elements = document.querySelectorAll('[data-animate]');
+                elements.forEach((el, index) => {
+                    el.classList.remove('animate');
+                    setTimeout(() => {
+                        el.classList.add('animate');
+                    }, index * 100);
+                });
+            },
+            
+            animateElements(elements) {
+                elements.forEach((el, index) => {
+                    setTimeout(() => {
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    }, index * 50);
+                });
+            },
+            
+            getActiveFilter() {
+                const activeChip = document.querySelector('#orders-filters .chip.active');
+                return activeChip?.dataset.status || '';
+            },
+            
+            // Вспомогательные функции
+            formatPhone(phone) {
+                if (!phone) return 'Не указан';
+                const cleaned = phone.toString().replace(/\D/g, '');
+                if (cleaned.length === 11 && cleaned.startsWith('7')) {
+                    const match = cleaned.match(/^(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/);
+                    if (match) {
+                        return `+${match[1]} (${match[2]}) ${match[3]}-${match[4]}-${match[5]}`;
+                    }
+                }
+                return phone;
+            },
+            
+            formatCurrency(amount) {
+                return new Intl.NumberFormat('ru-RU', {
+                    style: 'currency',
+                    currency: 'RUB',
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(amount);
+            },
+            
+            maskCard(cardNumber) {
+                if (!cardNumber) return '';
+                const cleaned = cardNumber.replace(/\D/g, '');
+                if (cleaned.length >= 12) {
+                    return `${cleaned.slice(0, 4)} **** **** ${cleaned.slice(-4)}`;
+                }
+                return cardNumber;
+            },
+            
+            getStatusText(status) {
+                const map = {
+                    'new': 'Новый',
+                    'in_progress': 'В работе',
+                    'awaiting_confirmation': 'Ожидает подтверждения',
+                    'awaiting_payment': 'Ожидает оплаты',
+                    'awaiting_cost': 'Расчет стоимости',
+                    'completed': 'Завершен',
+                    'canceled': 'Отменен',
+                    'calculated': 'Рассчитан',
+                    'settled': 'Оплачен'
+                };
+                return map[status] || status;
+            },
+            
+            getStatusIcon(status) {
+                const map = {
+                    'new': 'sparkles',
+                    'in_progress': 'spinner',
+                    'awaiting_confirmation': 'question-circle',
+                    'awaiting_payment': 'credit-card',
+                    'awaiting_cost': 'calculator',
+                    'completed': 'check-circle',
+                    'canceled': 'times-circle',
+                    'calculated': 'file-invoice',
+                    'settled': 'coins'
+                };
+                return map[status] || 'circle';
+            },
+            
+            getRoleText(role) {
+                const map = {
+                    'owner': 'Владелец',
+                    'operator': 'Оператор',
+                    'driver': 'Водитель',
+                    'user': 'Клиент'
+                };
+                return map[role] || role;
+            },
+            
+            getRoleIcon(role) {
+                const map = {
+                    'owner': 'crown',
+                    'operator': 'headset',
+                    'driver': 'truck',
+                    'user': 'user'
+                };
+                return map[role] || 'user';
+            },
+            
+            getLoadingHTML() {
+                return `
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <p class="loading-text">Загрузка данных...</p>
+                    </div>
+                `;
+            },
+            
+            getEmptyStateHTML(icon, text) {
+                return `
+                    <div class="empty-state">
+                        <i class="fas fa-${icon}"></i>
+                        <p>${text}</p>
+                    </div>
+                `;
+            },
+            
+            getErrorHTML(text) {
+                return `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                        <p style="color: var(--danger);">${text}</p>
+                    </div>
+                `;
             }
-        }
-
-        // Initialize app when DOM is ready
-        let app;
+        };
+        
+        // Инициализация при загрузке
         document.addEventListener('DOMContentLoaded', () => {
-            app = new ServiceApp();
-            app.init();
+            // Проверяем наличие Telegram WebApp
+            if (!window.Telegram?.WebApp) {
+                console.warn('Telegram WebApp not available');
+            }
             
-            // Setup logo animation
-            setupLogoAnimation();
+            UI.init();
+        });
+        
+        // Обработка кнопки "Назад" в Telegram
+        tg.BackButton.onClick(() => {
+            if (document.getElementById('modal').classList.contains('active')) {
+                UI.closeModal();
+            } else if (currentPanel !== 'orders') {
+                UI.showPanel('orders');
+            } else {
+                tg.close();
+            }
+        });
+        
+        // Обработка изменения темы
+        tg.onEvent('themeChanged', () => {
+            const root = document.documentElement;
+            const isDark = tg.colorScheme === 'dark';
             
-            // Setup global event handlers
-            document.getElementById('create-order-btn').addEventListener('click', () => {
-                app.showCreateOrderModal();
-            });
-            
-            // Setup filters for orders
-            document.getElementById('status-filter').addEventListener('change', () => {
-                if (app.currentPanel === 'orders') {
-                    app.loadOrders();
-                }
-            });
-            
-            document.getElementById('search-input').addEventListener('input', window.AppUtils.debounce(() => {
-                if (app.currentPanel === 'orders') {
-                    app.loadOrders();
-                }
-            }, 500));
-            
-            document.getElementById('refresh-orders-btn').addEventListener('click', () => {
-                if (app.currentPanel === 'orders') {
-                    app.loadOrders();
-                } else if (app.currentPanel === 'dashboard') {
-                    app.loadDashboardData();
-                }
-            });
+            if (!isDark) {
+                root.style.setProperty('--bg-primary', '#ffffff');
+                root.style.setProperty('--bg-secondary', '#f5f5f5');
+                root.style.setProperty('--text-primary', '#000000');
+                root.style.setProperty('--text-secondary', '#666666');
+            }
         });
 
-        // Make app available globally for debugging
-        window.ServiceApp = app;
+        // Анимация подзаголовка
+        const subtitle = document.getElementById('splash-subtitle');
+        const text = "ДЕМОНТАЖ | ВЫВОЗ МУСОРА";
+        subtitle.innerHTML = text.split('').map(letter => `<span>${letter}</span>`).join('');
+
+        Array.from(subtitle.children).forEach((span, index) => {
+            setTimeout(() => {
+                span.style.animationDelay = `${index * 0.1}s`;
+                span.classList.add('letter-fade-in');
+            }, 3500);
+        });
+
+        // Скрытие заставки
+        setTimeout(() => {
+            const splashScreen = document.getElementById('splash-screen');
+            splashScreen.style.opacity = '0';
+            setTimeout(() => {
+                splashScreen.style.display = 'none';
+            }, 1000);
+        }, 5000);
     </script>
 </body>
 </html>

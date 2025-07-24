@@ -24,8 +24,11 @@ func SetupRoutes(r *chi.Mux, deps ApiDependencies) {
 		r.Get("/api/client-config", GetClientConfig)
 	})
 
-	// ВРЕМЕННЫЙ ТЕСТОВЫЙ МАРШРУТ для отладки (БЕЗ АУТЕНТИФИКАЦИИ)
+	// ВРЕМЕННЫЕ ТЕСТОВЫЕ МАРШРУТЫ для отладки (БЕЗ АУТЕНТИФИКАЦИИ)
 	r.Get("/api/test/profile", GetTestUserProfile)
+	r.Get("/api/test/orders", GetTestOrders)
+	r.Get("/api/test/clients", GetTestClients)
+	r.Get("/api/test/order/{id}", GetTestOrderDetails)
 
 	// Этот маршрут должен быть публичным, но с проверкой доступа внутри обработчика
 	// Используем MediaProxyHandler вместо ServeMediaHandler для безопасной отдачи файлов

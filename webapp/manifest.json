@@ -1,17 +1,12 @@
 {
     "name": "Сервис-Крым",
-    "short_name": "ServiceCrym",
-    "description": "Современное приложение для управления заказами вывоза мусора и демонтажа в Крыму",
-    "version": "3.0",
+    "short_name": "Сервис-Крым",
+    "description": "Сервис-Крым - современное приложение для управления заказами",
     "start_url": "/",
     "display": "standalone",
+    "background_color": "#1e1e1e",
+    "theme_color": "#ffaa00",
     "orientation": "portrait",
-    "theme_color": "#1a1a1a",
-    "background_color": "#1a1a1a",
-    "scope": "/",
-    "lang": "ru",
-    "categories": ["productivity", "business"],
-    
     "icons": [
         {
             "src": "icons/icon-72x72.png",
@@ -20,21 +15,21 @@
             "purpose": "any maskable"
         },
         {
-            "src": "icons/icon-96x96.png", 
+            "src": "icons/icon-96x96.png",
             "sizes": "96x96",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
             "src": "icons/icon-128x128.png",
-            "sizes": "128x128", 
+            "sizes": "128x128",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
             "src": "icons/icon-144x144.png",
             "sizes": "144x144",
-            "type": "image/png", 
+            "type": "image/png",
             "purpose": "any maskable"
         },
         {
@@ -44,14 +39,14 @@
             "purpose": "any maskable"
         },
         {
-            "src": "icons/icon-192x192.png", 
+            "src": "icons/icon-192x192.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
             "src": "icons/icon-384x384.png",
-            "sizes": "384x384", 
+            "sizes": "384x384",
             "type": "image/png",
             "purpose": "any maskable"
         },
@@ -62,16 +57,15 @@
             "purpose": "any maskable"
         }
     ],
-    
     "shortcuts": [
         {
-            "name": "Создать заказ",
-            "short_name": "Новый заказ", 
-            "description": "Быстро создать новый заказ",
-            "url": "/?action=create-order",
+            "name": "Новый заказ",
+            "short_name": "Новый заказ",
+            "description": "Создать новый заказ",
+            "url": "/?action=new_order",
             "icons": [
                 {
-                    "src": "icons/icon-96x96.png",
+                    "src": "icons/new-order-96x96.png",
                     "sizes": "96x96"
                 }
             ]
@@ -79,33 +73,45 @@
         {
             "name": "Мои заказы",
             "short_name": "Заказы",
-            "description": "Просмотреть все заказы",
-            "url": "/?section=orders", 
+            "description": "Просмотр моих заказов",
+            "url": "/?panel=orders",
             "icons": [
                 {
-                    "src": "icons/icon-96x96.png",
+                    "src": "icons/orders-96x96.png",
                     "sizes": "96x96"
                 }
             ]
         }
     ],
-    
-    "protocol_handlers": [
+    "related_applications": [],
+    "prefer_related_applications": false,
+    "categories": ["business", "productivity"],
+    "screenshots": [
         {
-            "protocol": "web+servicecrym",
-            "url": "/?action=%s"
+            "src": "screenshots/orders-list.png",
+            "sizes": "1080x1920",
+            "type": "image/png"
+        },
+        {
+            "src": "screenshots/order-details.png",
+            "sizes": "1080x1920",
+            "type": "image/png"
         }
     ],
-    
-    "prefer_related_applications": false,
-    
     "share_target": {
-        "action": "/share",
-        "method": "GET",
+        "action": "/?share-target",
+        "method": "POST",
+        "enctype": "multipart/form-data",
         "params": {
             "title": "title",
             "text": "text",
-            "url": "url"
+            "url": "url",
+            "files": [
+                {
+                    "name": "media",
+                    "accept": ["image/*", "video/*"]
+                }
+            ]
         }
     }
 } 

@@ -17,7 +17,7 @@ func (bh *BotHandler) SendGatewayMenu(chatID int64, messageIDToEdit int) {
 	log.Printf("BotHandler.SendGatewayMenu для chatID %d, messageIDToEdit: %d", chatID, messageIDToEdit)
 
 	// !!! ВАЖНО: Замените 'https://your-web-app.url' на реальный URL вашего Web App
-	webAppURL := "https://xn----ctbinlmxece7i.xn--p1ai/webapp/" // Пример URL
+	webAppURL := "https://xn----ctbinlmxece7i.xn--p1ai/webapp/mini-app-fix.html" // Минимальный HTML с встроенными стилями
 
 	msgText := "Добро пожаловать! 🚀\n\nВыберите, как вам удобнее продолжить:"
 

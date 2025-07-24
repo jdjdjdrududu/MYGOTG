@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+
 	// "strconv" // Не используется напрямую в этом файле, но может быть в utils
 	"strings"
 	"time"
@@ -1068,8 +1069,8 @@ func GetOrdersByChatIDAndMultipleStatuses(userChatID int64, statuses []string, p
 			return nil, errScan
 		}
 
-		o.Photos = []string(photos)
-		o.Videos = []string(videos)
+		o.Photos = photos
+		o.Videos = videos
 
 		if dbDate.Valid {
 			o.Date = dbDate.Time.Format("2006-01-02")

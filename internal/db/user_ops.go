@@ -588,7 +588,7 @@ func GetOrdersByUserID(userID int64) ([]models.Order, error) {
 		SELECT
 			o.id, o.user_id, o.user_chat_id, o.category, o.subcategory, o.description,
 			o.name, o.phone, o.address, o.date, o.time, o.payment, o.cost,
-			o.status, o.created_at, o.updated_at, o.photos, o.videos
+			o.status, o.reason, o.created_at, o.updated_at, o.photos, o.videos
 		FROM orders o
 		WHERE o.user_id = $1
 		ORDER BY o.created_at DESC
@@ -607,11 +607,11 @@ func GetOrdersByUserID(userID int64) ([]models.Order, error) {
 		var photos pq.StringArray
 		var videos pq.StringArray
 
-		// ИСПРАВЛЕНИЕ: Убрано поле CancellationReason из сканирования
+		// ИСПРАВЛЕНИЕ: Добавлено поле Reason в сканирование
 		errScan := rows.Scan(
 			&order.ID, &order.UserID, &order.UserChatID, &order.Category, &order.Subcategory, &order.Description,
 			&order.Name, &order.Phone, &order.Address, &order.Date, &order.Time, &order.Payment, &order.Cost,
-			&order.Status, &order.CreatedAt, &order.UpdatedAt, &photos, &videos,
+			&order.Status, &order.Reason, &order.CreatedAt, &order.UpdatedAt, &photos, &videos,
 		)
 		if errScan != nil {
 			log.Printf("GetOrdersByUserID: ошибка сканирования заказа: %v", errScan)

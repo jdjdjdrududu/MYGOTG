@@ -1,717 +1,419 @@
 /**
- * @fileoverview Optimized API Module with caching and performance optimizations
- * @version 2.0
+ * API Module
+ * Handles all API communication with the backend
  */
 
 class APIModule {
     constructor(app) {
         this.app = app;
-        this.baseUrl = app.config.apiBaseUrl;
-        this.cache = new Map();
-        this.requestQueue = [];
-        this.failedRequests = [];
-        this.abortControllers = new Map();
         
-        // Request deduplication
-        this.pendingRequests = new Map();
-        
-        // Batch processing
-        this.batchQueue = [];
-        this.batchTimer = null;
-        
-        // Performance monitoring
-        this.metrics = {
-            totalRequests: 0,
-            successfulRequests: 0,
-            failedRequests: 0,
-            averageResponseTime: 0,
-            cacheHits: 0
-        };
-
-        this.setupInterceptors();
-    }
-
-    /**
-     * Setup request/response interceptors
-     */
-    setupInterceptors() {
-        // Auto-retry for failed requests
-        this.retryConfig = {
-            maxRetries: 3,
-            retryDelay: 1000,
-            retryMultiplier: 2,
-            retryableStatusCodes: [408, 429, 500, 502, 503, 504]
-        };
-    }
-
-    /**
-     * Main fetch method with all optimizations
-     */
-    async fetch(endpoint, options = {}) {
-        const requestKey = this.generateRequestKey(endpoint, options);
-        
-        // Check for pending identical request
-        if (this.pendingRequests.has(requestKey)) {
-            return this.pendingRequests.get(requestKey);
-        }
-
-        const requestPromise = this._performRequest(endpoint, options);
-        this.pendingRequests.set(requestKey, requestPromise);
-
-        try {
-            const result = await requestPromise;
-            return result;
-        } finally {
-            this.pendingRequests.delete(requestKey);
-        }
-    }
-
-    /**
-     * Internal request performer
-     */
-    async _performRequest(endpoint, options = {}) {
-        const startTime = performance.now();
-        this.metrics.totalRequests++;
-
-        // Check cache first
-        const cacheKey = this.generateCacheKey(endpoint, options);
-        if (options.cache !== false && this.cache.has(cacheKey)) {
-            const cached = this.cache.get(cacheKey);
-            if (!this.isCacheExpired(cached)) {
-                this.metrics.cacheHits++;
-                console.log(`📦 Cache hit for ${endpoint}`);
-                return cached.data;
-            } else {
-                this.cache.delete(cacheKey);
-            }
-        }
-
-        // Check network status
-        if (!navigator.onLine) {
-            throw new Error('No internet connection');
-        }
-
-        // Create abort controller for request cancellation
-        const abortController = new AbortController();
-        const requestId = this.generateRequestId();
-        this.abortControllers.set(requestId, abortController);
-
-        // Prepare headers with authentication
-        const headers = {
-            'Content-Type': 'application/json',
-            'X-Client-Version': this.app.version,
-            'X-Request-ID': requestId,
-            ...options.headers
-        };
-
-        // Add Telegram authentication if available
-        if (this.app.tg && this.app.tg.initData) {
-            headers['X-Telegram-Auth'] = this.app.tg.initData;
+        // Get API base URL from config with proper fallback
+        const config = window.APP_CONFIG;
+        if (config && config.API_BASE && config.API_PREFIX) {
+            this.baseURL = config.API_BASE + config.API_PREFIX;
         } else {
-            console.warn('⚠️ No Telegram auth data available, request may fail');
+            this.baseURL = window.APP_CONFIG?.API_BASE_URL || '/api';
         }
-
-        const requestOptions = {
-            method: 'GET',
-            headers,
-            signal: abortController.signal,
-            ...options
-        };
-
-        // Handle different body types
-        if (options.body && !(options.body instanceof FormData)) {
-            requestOptions.body = JSON.stringify(options.body);
+        
+        if (this.baseURL.endsWith('/')) {
+            this.baseURL = this.baseURL.slice(0, -1);
         }
+        
+        // Bind methods
+        this.request = this.request.bind(this);
+        this.handleResponse = this.handleResponse.bind(this);
+        this.handleError = this.handleError.bind(this);
+        
+        console.log('✅ API Module initialized with baseURL:', this.baseURL);
+    }
 
+    /**
+     * Make an API request
+     */
+    async request(endpoint, options = {}) {
         try {
-            const response = await this._fetchWithRetry(`${this.baseUrl}${endpoint}`, requestOptions);
+            // Store endpoint for fallback data
+            this.lastEndpoint = endpoint;
+
+            // Clean up the endpoint
+            const cleanEndpoint = endpoint.replace(/^\/+|\/+$/g, '');
+            const url = `${this.baseURL}/${cleanEndpoint}`;
             
-            if (!response.ok) {
-                throw new APIError(response.status, response.statusText, await this.extractErrorData(response));
-            }
-
-            const data = await this.parseResponse(response);
+            // Get current initData or use fallback
+            const initData = this.app.tg?.initData;
+            let authHeader = 'fallback-development-mode';
             
-            // Cache successful responses
-            if (options.cache !== false && requestOptions.method === 'GET') {
-                this.cacheResponse(cacheKey, data, options.cacheTTL);
+            if (initData && initData !== 'fallback_init_data') {
+                authHeader = initData;
+            } else if (window.APP_CONFIG?.AUTH_FALLBACK_ENABLED) {
+                authHeader = 'fallback-development-mode';
+            } else {
+                throw new Error('No Telegram auth data available');
             }
+            
+            // Default options
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Telegram-Auth': authHeader
+                },
+                credentials: 'include'
+            };
+            
+            // Merge options
+            const fetchOptions = {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...options.headers
+                }
+            };
+            
+            // Add body if present
+            if (options.body) {
+                if (options.body instanceof FormData) {
+                    delete fetchOptions.headers['Content-Type'];
+                } else {
+                    fetchOptions.body = JSON.stringify(options.body);
+                }
+            }
+            
+            // Make request with timeout
+            const controller = new AbortController();
+            const timeout = setTimeout(() => {
+                controller.abort();
+            }, window.APP_CONFIG?.API_TIMEOUT || 15000);
 
-            this.metrics.successfulRequests++;
-            const responseTime = performance.now() - startTime;
-            this.updateAverageResponseTime(responseTime);
-
-            console.log(`✅ API success: ${endpoint} (${responseTime.toFixed(2)}ms)`);
-            return data;
-
+            fetchOptions.signal = controller.signal;
+            
+            try {
+                const response = await fetch(url, fetchOptions);
+                clearTimeout(timeout);
+                return await this.handleResponse(response);
+            } catch (error) {
+                clearTimeout(timeout);
+                if (error.name === 'AbortError') {
+                    throw new Error('Request timeout');
+                }
+                throw error;
+            }
+            
         } catch (error) {
-            this.metrics.failedRequests++;
+            return this.handleError(error);
+        }
+    }
+
+    /**
+     * Handle API response
+     */
+    async handleResponse(response) {
+        const contentType = response.headers.get('content-type');
+        const isJson = contentType && contentType.includes('application/json');
+        
+        // Parse response
+        let data;
+        try {
+            data = isJson ? await response.json() : await response.text();
+        } catch (e) {
+            console.error('Failed to parse response:', e);
+            throw new Error('Failed to parse server response');
+        }
+        
+        // Check for errors
+        if (!response.ok) {
+            // Create more descriptive error message
+            let errorMessage = 'Unknown error';
+            if (data.error) {
+                errorMessage = data.error;
+            } else if (data.message) {
+                errorMessage = data.message;
+            } else if (typeof data === 'string' && data.trim()) {
+                errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            } else {
+                errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+            }
             
-            if (error.name !== 'AbortError') {
-                this.failedRequests.push({
-                    endpoint,
-                    options,
-                    error,
-                    timestamp: Date.now(),
-                    retryCount: options.retryCount || 0
+            const error = new Error(errorMessage);
+            error.status = response.status;
+            error.response = data;
+            
+            // Log detailed error in debug mode
+            if (window.APP_CONFIG.DEBUG) {
+                console.error('API Error Details:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    data: data,
+                    headers: Object.fromEntries([...response.headers])
                 });
             }
-
-            console.error(`❌ API error: ${endpoint}`, error);
-            throw error;
-        } finally {
-            this.abortControllers.delete(requestId);
-        }
-    }
-
-    /**
-     * Fetch with automatic retry logic
-     */
-    async _fetchWithRetry(url, options, retryCount = 0) {
-        try {
-            return await fetch(url, options);
-        } catch (error) {
-            if (retryCount < this.retryConfig.maxRetries && this.shouldRetry(error)) {
-                const delay = this.retryConfig.retryDelay * Math.pow(this.retryConfig.retryMultiplier, retryCount);
-                console.log(`🔄 Retrying request in ${delay}ms (attempt ${retryCount + 1})`);
-                
-                await this.delay(delay);
-                return this._fetchWithRetry(url, options, retryCount + 1);
-            }
+            
             throw error;
         }
+        
+        return data;
     }
 
     /**
-     * Parse response based on content type
+     * Handle API error
      */
-    async parseResponse(response) {
-        const contentType = response.headers.get('content-type');
+    handleError(error) {
+        // Log error
+        if (window.APP_CONFIG.DEBUG) {
+            console.error('❌ API Error:', error);
+            console.error('Stack trace:', error.stack);
+        }
         
-        if (contentType?.includes('application/json')) {
-            const text = await response.text();
-            if (!text) return {};
+        // Check if it's an authentication error
+        if (error.status === 401 || error.status === 403) {
+            console.error('Authentication failed:', error);
             
-            const data = JSON.parse(text);
-            
-            // Handle API response format
-            if (data.status === 'error') {
-                throw new APIError(400, data.message, data.data);
+            // Use fallback if enabled
+            if (window.APP_CONFIG.AUTH_FALLBACK_ENABLED) {
+                console.warn('⚠️ Using emergency fallback authentication');
+                return this.getFallbackData();
             }
             
-            return data.data || data;
-        } else {
-            return response.text();
+            throw new Error('Authentication failed: ' + (error.message || 'Unknown error'));
         }
-    }
-
-    /**
-     * Extract error data from response
-     */
-    async extractErrorData(response) {
-        try {
-            return await response.json();
-        } catch {
-            return { message: response.statusText };
-        }
-    }
-
-    /**
-     * Batch multiple requests together
-     */
-    async batchRequest(requests) {
-        if (!Array.isArray(requests)) {
-            throw new Error('Batch requests must be an array');
-        }
-
-        console.log(`📦 Processing batch of ${requests.length} requests`);
         
-        // Execute requests in parallel with concurrency limit
-        const concurrencyLimit = 5;
-        const results = [];
-        
-        for (let i = 0; i < requests.length; i += concurrencyLimit) {
-            const batch = requests.slice(i, i + concurrencyLimit);
-            const batchPromises = batch.map(req => 
-                this.fetch(req.endpoint, req.options).catch(error => ({ error, request: req }))
-            );
-            
-            const batchResults = await Promise.all(batchPromises);
-            results.push(...batchResults);
+        // Use fallback for 404 errors when in development/test mode
+        if (error.status === 404 && window.APP_CONFIG.AUTH_FALLBACK_ENABLED) {
+            console.warn('⚠️ Using emergency fallback authentication (404 error)');
+            return this.getFallbackData();
         }
-
-        return results;
+        
+        // Use fallback if enabled for other errors in dev mode
+        if (window.APP_CONFIG.AUTH_FALLBACK_ENABLED && window.APP_CONFIG.DEBUG) {
+            console.warn('⚠️ Using emergency fallback authentication');
+            return this.getFallbackData();
+        }
+        
+        throw error;
     }
 
     /**
-     * Fetch user profile from backend with real authentication
+     * Get fallback data for development
+     */
+    getFallbackData() {
+        const testData = {
+            orders: [
+                {
+                    ID: 1,
+                    Status: 'new',
+                    ContactName: 'Тестовый Клиент',
+                    ContactPhone: '79781234567',
+                    ServiceAddress: 'ул. Тестовая, д. 1',
+                    FinalCost: 1500,
+                    CreatedAt: new Date().toISOString()
+                },
+                {
+                    ID: 2,
+                    Status: 'in_progress',
+                    ContactName: 'Другой Клиент',
+                    ContactPhone: '79787654321',
+                    ServiceAddress: 'ул. Ленина, д. 10',
+                    FinalCost: 2500,
+                    CreatedAt: new Date(Date.now() - 86400000).toISOString()
+                }
+            ],
+            clients: [
+                {
+                    ID: 1,
+                    FirstName: 'Иван',
+                    LastName: 'Петров',
+                    Username: 'ivan_petrov',
+                    Phone: '79781234567',
+                    Role: 'user',
+                    IsBlocked: false
+                },
+                {
+                    ID: 2,
+                    FirstName: 'Мария',
+                    LastName: 'Иванова',
+                    Username: 'maria_ivanova',
+                    Phone: '79787654321',
+                    Role: 'user',
+                    IsBlocked: false
+                }
+            ],
+            profile: {
+                ID: 1263060321,
+                Username: 'Demontaj_Crimea',
+                FirstName: 'Оператор',
+                LastName: 'Сервис-Крым',
+                Role: 'operator',
+                Phone: '79781234567',
+                IsActive: true
+            },
+            dashboard: {
+                activeOrders: 5,
+                completedOrders: 15,
+                totalOrders: 20
+            }
+        };
+
+        // Return appropriate test data based on the endpoint
+        const endpoint = this.lastEndpoint?.toLowerCase() || '';
+        
+        if (endpoint.includes('orders')) {
+            return {
+                status: 'success',
+                data: testData.orders
+            };
+        } else if (endpoint.includes('clients')) {
+            return {
+                status: 'success',
+                data: testData.clients
+            };
+        } else if (endpoint.includes('profile') || endpoint.includes('user')) {
+            return {
+                status: 'success',
+                data: testData.profile
+            };
+        } else if (endpoint.includes('dashboard') || endpoint.includes('stats')) {
+            return {
+                status: 'success',
+                data: testData.dashboard
+            };
+        }
+
+        // Default fallback
+        return {
+            status: 'success',
+            data: []
+        };
+    }
+
+    /**
+     * Fetch user profile
      */
     async fetchUserProfile() {
         try {
-            const response = await this.fetch('/api/user/profile', {
-                cache: true,
-                cacheTTL: 300000 // 5 minutes
+            // Get user ID from Telegram WebApp
+            const webAppUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+            if (!webAppUser) {
+                throw new Error('No user data in Telegram WebApp');
+            }
+
+            // Make API request
+            const response = await this.request('user/profile', {
+                headers: {
+                    'X-Telegram-Auth': window.Telegram.WebApp.initData
+                }
             });
             
-            // Transform backend response to match frontend expectations
-            if (response && response.data) {
-                const user = response.data;
-                return {
-                    Role: user.Role,
-                    ID: user.ID,
-                    Name: user.FirstName + (user.LastName ? ' ' + user.LastName : ''),
-                    FirstName: user.FirstName,
-                    LastName: user.LastName,
-                    Username: user.Nickname,
-                    ChatID: user.ChatID,
-                    Phone: user.Phone,
-                    IsBlocked: user.IsBlocked
-                };
-            }
-            
-            throw new Error('Invalid response format');
+            return response;
             
         } catch (error) {
-            console.error('❌ Authentication error:', error);
+            if (window.APP_CONFIG.AUTH_FALLBACK_ENABLED) {
+                return this.getFallbackData().user;
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Fetch orders
+     */
+    async fetchOrders(filters = {}) {
+        try {
+            const queryParams = new URLSearchParams(filters).toString();
             
-            // Пробуем тестовый эндпоинт для отладки
-            if (error.status === 401 || !this.app.tg?.initData) {
-                console.warn('⚠️ Пробуем тестовый эндпоинт для отладки...');
-                try {
-                    const testResponse = await this.fetch('/api/test/profile', {
-                        cache: false
-                    });
-                    
-                    if (testResponse && testResponse.data) {
-                        console.warn('✅ Используется тестовый профиль пользователя');
-                        const user = testResponse.data;
-                        return {
-                            Role: user.Role,
-                            ID: user.ID,
-                            Name: user.FirstName + (user.LastName ? ' ' + user.LastName : ''),
-                            FirstName: user.FirstName,
-                            LastName: user.LastName,
-                            Username: user.Nickname,
-                            ChatID: user.ChatID,
-                            Phone: user.Phone,
-                            IsBlocked: user.IsBlocked
-                        };
-                    }
-                } catch (testError) {
-                    console.error('❌ Тестовый эндпоинт также недоступен:', testError);
-                }
+            // Check user role to determine correct endpoint
+            const user = this.app?.state?.user;
+            let endpoint;
+            
+            if (user && ['operator', 'admin', 'owner'].includes(user.Role)) {
+                // For operators/admins, use admin endpoint
+                endpoint = `admin/orders${queryParams ? '?' + queryParams : ''}`;
+            } else {
+                // For regular users, use user endpoint
+                endpoint = `user/orders${queryParams ? '?' + queryParams : ''}`;
             }
             
-            // Emergency fallback for development/testing only
-            const tg = window.Telegram?.WebApp;
-            if (tg && tg.initDataUnsafe?.user) {
-                console.warn('⚠️ Using emergency fallback authentication');
-                return {
-                    Role: 'operator', // Default role for testing
-                    ID: tg.initDataUnsafe.user.id || 999999,
-                    Name: tg.initDataUnsafe.user.first_name || 'Тестовый пользователь',
-                    FirstName: tg.initDataUnsafe.user.first_name,
-                    LastName: tg.initDataUnsafe.user.last_name,
-                    Username: tg.initDataUnsafe.user.username,
-                    ChatID: tg.initDataUnsafe.user.id
-                };
+            return this.request(endpoint);
+        } catch (error) {
+            console.error('Failed to fetch orders:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Fetch clients
+     */
+    async fetchClients(filters = {}) {
+        try {
+            const queryParams = new URLSearchParams(filters).toString();
+            
+            // Clients endpoint is only for operators/admins
+            const user = this.app?.state?.user;
+            if (!user || !['operator', 'admin', 'owner'].includes(user.Role)) {
+                throw new Error('Access denied: Clients data is only available for operators and admins');
             }
             
-            throw new Error('Authentication failed and no fallback available');
+            const endpoint = `admin/clients${queryParams ? '?' + queryParams : ''}`;
+            return this.request(endpoint);
+        } catch (error) {
+            console.error('Failed to fetch clients:', error);
+            throw error;
         }
     }
 
     /**
-     * Order management methods
+     * Fetch analytics
      */
-    async fetchOrders(statusKey = 'active') {
-        const userRole = this.app.state.user?.Role;
-        
-        // Choose correct endpoint based on user role
-        if (userRole === 'user') {
-            return this.fetch(`/api/user/orders?status=${statusKey}`);
-        } else {
-            return this.fetch(`/api/admin/orders?status=${statusKey}`);
-        }
+    async fetchAnalytics(period = 'month') {
+        return this.request(`analytics?period=${period}`);
     }
 
-    async fetchOrderDetails(orderId) {
-        const userRole = this.app.state.user?.Role;
-        
-        // Choose correct endpoint based on user role
-        if (userRole === 'user') {
-            return this.fetch(`/api/user/order/${orderId}`);
-        } else {
-            return this.fetch(`/api/admin/order/${orderId}`);
-        }
-    }
-
-    async fetchClients() {
-        return this.fetch('/api/admin/clients');
-    }
-
-    async fetchClientDetails(clientId) {
-        return this.fetch(`/api/admin/client/${clientId}`);
-    }
-
-    async createOrderForUser(payload) {
-        return this.fetch('/api/user/create-order', { method: 'POST', body: payload });
-    }
-
-    async createOrderForOperator(payload) {
-        return this.fetch('/api/admin/create-order', { method: 'POST', body: payload });
-    }
-
-    async fetchUserOrders() {
-        return this.fetch('/api/user/orders');
-    }
-
-    async fetchUserOrderDetails(orderId) {
-        return this.fetch(`/api/user/order/${orderId}`);
-    }
-
-    async updateOrder(orderId, updateData) {
-        // Determine correct endpoint based on user role and operation
-        const user = this.app.state.user;
-        const isOperator = user && ['operator', 'main_operator', 'owner'].includes(user.Role);
-        
-        // Admin/operator endpoints for order actions
-        const endpoint = isOperator ? 
-            `/api/admin/order/${orderId}/action` : 
-            `/api/user/order/${orderId}/action`;
-            
-        const result = await this.fetch(endpoint, {
+    /**
+     * Create order
+     */
+    async createOrder(orderData) {
+        return this.request('orders', {
             method: 'POST',
-            body: updateData,
-            cache: false
-        });
-        
-        // Invalidate related caches
-        this.invalidateCache(`/api/user/order/${orderId}`);
-        this.invalidateCache(`/api/admin/order/${orderId}`);
-        this.invalidateCache('/api/user/orders');
-        this.invalidateCache('/api/admin/orders');
-        
-        return result;
-    }
-
-    /**
-     * Search orders with query
-     */
-    async searchOrders(query, status = 'active') {
-        const user = this.app.state.user;
-        const isOperator = user && ['operator', 'main_operator', 'owner'].includes(user.Role);
-        
-        if (isOperator) {
-            return this.fetch(`/api/admin/orders?search=${encodeURIComponent(query)}&status=${status}`, {
-                cache: false // Search results shouldn't be cached
-            });
-        } else {
-            return this.fetch(`/api/user/orders?search=${encodeURIComponent(query)}&status=${status}`, {
-                cache: false
-            });
-        }
-    }
-
-    /**
-     * Get real-time updates for orders
-     */
-    async getOrderUpdates(since, status = 'active') {
-        const user = this.app.state.user;
-        const isOperator = user && ['operator', 'main_operator', 'owner'].includes(user.Role);
-        
-        if (isOperator) {
-            return this.fetch(`/api/admin/orders?since=${since}&status=${status}`, {
-                cache: false,
-                cacheTTL: 0 // No caching for real-time updates
-            });
-        } else {
-            return this.fetch(`/api/user/orders?since=${since}&status=${status}`, {
-                cache: false,
-                cacheTTL: 0
-            });
-        }
-    }
-
-    /**
-     * Update order field (for operators)
-     */
-    async updateOrderField(orderId, field, value) {
-        const user = this.app.state.user;
-        const isOperator = user && ['operator', 'main_operator', 'owner'].includes(user.Role);
-        
-        if (!isOperator) {
-            throw new Error('Access denied: Only operators can update order fields');
-        }
-        
-        const result = await this.fetch(`/api/admin/order/${orderId}/update-field`, {
-            method: 'POST',
-            body: { field, value },
-            cache: false
-        });
-        
-        // Invalidate related caches
-        this.invalidateCache(`/api/admin/order/${orderId}`);
-        this.invalidateCache('/api/admin/orders');
-        
-        return result;
-    }
-
-    /**
-     * Add media to order
-     */
-    async addOrderMedia(orderId, mediaData) {
-        const user = this.app.state.user;
-        const isOperator = user && ['operator', 'main_operator', 'owner'].includes(user.Role);
-        
-        const endpoint = isOperator ? 
-            `/api/admin/order/${orderId}/add-media` : 
-            `/api/user/order/${orderId}/add-media`;
-            
-        const result = await this.fetch(endpoint, {
-            method: 'POST',
-            body: mediaData,
-            cache: false
-        });
-        
-        // Invalidate related caches
-        this.invalidateCache(`/api/user/order/${orderId}`);
-        this.invalidateCache(`/api/admin/order/${orderId}`);
-        
-        return result;
-    }
-
-    /**
-     * Client management methods
-     */
-    async fetchClients(page = 1, limit = 20, search = '') {
-        const queryParams = new URLSearchParams({
-            page: page.toString(),
-            limit: limit.toString(),
-            ...(search && { search })
-        });
-        
-        return this.fetch(`/api/clients?${queryParams}`, {
-            cache: true,
-            cacheTTL: 60000 // 1 minute
-        });
-    }
-
-    async fetchClientDetails(clientId) {
-        return this.fetch(`/api/clients/${clientId}`, {
-            cache: true,
-            cacheTTL: 120000 // 2 minutes
+            body: orderData
         });
     }
 
     /**
-     * Staff management methods
+     * Update order
      */
-    async fetchStaff(role) {
-        return this.fetch(`/api/staff?role=${role}`, {
-            cache: true,
-            cacheTTL: 300000 // 5 minutes
+    async updateOrder(orderId, orderData) {
+        return this.request(`orders/${orderId}`, {
+            method: 'PUT',
+            body: orderData
         });
-    }
-
-    async addStaff(staffData) {
-        const result = await this.fetch('/api/staff', {
-            method: 'POST',
-            body: staffData,
-            cache: false
-        });
-        
-        // Invalidate staff cache
-        this.invalidateCache('/api/staff');
-        
-        return result;
     }
 
     /**
-     * Media upload with progress tracking
+     * Delete order
      */
-    async uploadMedia(files, onProgress) {
-        if (!Array.isArray(files)) {
-            files = [files];
-        }
+    async deleteOrder(orderId) {
+        return this.request(`orders/${orderId}`, {
+            method: 'DELETE'
+        });
+    }
 
+    /**
+     * Upload file
+     */
+    async uploadFile(file, type = 'image') {
         const formData = new FormData();
-        files.forEach((file, index) => {
-            formData.append(`media_${index}`, file);
-        });
-
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            
-            xhr.upload.addEventListener('progress', (event) => {
-                if (event.lengthComputable && onProgress) {
-                    const percentComplete = (event.loaded / event.total) * 100;
-                    onProgress(percentComplete);
-                }
-            });
-
-            xhr.addEventListener('load', () => {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        resolve(response);
-                    } catch (error) {
-                        reject(new Error('Invalid JSON response'));
-                    }
-                } else {
-                    reject(new Error(`Upload failed: ${xhr.statusText}`));
-                }
-            });
-
-            xhr.addEventListener('error', () => {
-                reject(new Error('Network error during upload'));
-            });
-
-            xhr.open('POST', `${this.baseUrl}/api/upload-media`);
-            xhr.setRequestHeader('X-Telegram-Auth', this.app.tg.initData);
-            xhr.send(formData);
-        });
-    }
-
-    /**
-     * Cache management methods
-     */
-    cacheResponse(key, data, ttl = 60000) {
-        this.cache.set(key, {
-            data,
-            timestamp: Date.now(),
-            ttl
-        });
+        formData.append('file', file);
+        formData.append('type', type);
         
-        // Clean old cache entries periodically
-        if (this.cache.size > 100) {
-            this.cleanExpiredCache();
-        }
-    }
-
-    isCacheExpired(cached) {
-        return Date.now() - cached.timestamp > cached.ttl;
-    }
-
-    invalidateCache(pattern) {
-        if (typeof pattern === 'string') {
-            // Exact match or pattern matching
-            for (const key of this.cache.keys()) {
-                if (key.includes(pattern)) {
-                    this.cache.delete(key);
-                }
+        return this.request('upload-media', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                // Remove Content-Type to let browser set it with boundary
+                'Content-Type': undefined
             }
-        }
-    }
-
-    cleanExpiredCache() {
-        for (const [key, cached] of this.cache.entries()) {
-            if (this.isCacheExpired(cached)) {
-                this.cache.delete(key);
-            }
-        }
-    }
-
-    clearCache() {
-        this.cache.clear();
-        console.log('🗑️ Cache cleared');
-    }
-
-    /**
-     * Request management
-     */
-    generateRequestKey(endpoint, options) {
-        return `${options.method || 'GET'}:${endpoint}:${JSON.stringify(options.body || {})}`;
-    }
-
-    generateCacheKey(endpoint, options) {
-        return `cache:${endpoint}:${JSON.stringify(options.query || {})}`;
-    }
-
-    generateRequestId() {
-        return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    }
-
-    /**
-     * Error handling
-     */
-    shouldRetry(error) {
-        if (error.name === 'AbortError') return false;
-        if (error instanceof APIError) {
-            return this.retryConfig.retryableStatusCodes.includes(error.status);
-        }
-        return true; // Retry network errors
-    }
-
-    /**
-     * Retry failed requests
-     */
-    async retryFailedRequests() {
-        if (this.failedRequests.length === 0) return;
-
-        console.log(`🔄 Retrying ${this.failedRequests.length} failed requests`);
-        
-        const requestsToRetry = this.failedRequests.splice(0);
-        
-        for (const { endpoint, options } of requestsToRetry) {
-            try {
-                await this.fetch(endpoint, { ...options, retryCount: 0 });
-            } catch (error) {
-                console.warn(`Still failing: ${endpoint}`, error);
-            }
-        }
-    }
-
-    /**
-     * Cancel all pending requests
-     */
-    cancelAllRequests() {
-        for (const controller of this.abortControllers.values()) {
-            controller.abort();
-        }
-        this.abortControllers.clear();
-        console.log('🚫 All requests cancelled');
-    }
-
-    /**
-     * Utility methods
-     */
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    updateAverageResponseTime(responseTime) {
-        const totalRequests = this.metrics.successfulRequests;
-        const currentAverage = this.metrics.averageResponseTime;
-        this.metrics.averageResponseTime = ((currentAverage * (totalRequests - 1)) + responseTime) / totalRequests;
-    }
-
-    /**
-     * Get API statistics
-     */
-    getStatistics() {
-        return {
-            ...this.metrics,
-            cacheSize: this.cache.size,
-            pendingRequests: this.pendingRequests.size,
-            failedRequestsCount: this.failedRequests.length,
-            successRate: (this.metrics.successfulRequests / this.metrics.totalRequests * 100).toFixed(2) + '%',
-            cacheHitRate: (this.metrics.cacheHits / this.metrics.totalRequests * 100).toFixed(2) + '%'
-        };
+        });
     }
 }
 
-/**
- * Custom API Error class
- */
-class APIError extends Error {
-    constructor(status, message, data = null) {
-        super(message);
-        this.name = 'APIError';
-        this.status = status;
-        this.data = data;
-    }
-}
-
-// Делаем APIModule доступным глобально
+// Export module
 window.APIModule = APIModule; 
