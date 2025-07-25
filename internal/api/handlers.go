@@ -1135,3 +1135,218 @@ func GetTestUserProfile(w http.ResponseWriter, r *http.Request) {
 
 	writeJSONSuccess(w, "Test profile retrieved successfully", testUser)
 }
+
+// DeleteTestUser - ВРЕМЕННАЯ функция для удаления тестовых пользователей
+// ВНИМАНИЕ: Эта функция создана только для очистки и должна быть удалена в продакшене!
+func DeleteTestUser(w http.ResponseWriter, r *http.Request) {
+	userIDStr := chi.URLParam(r, "id")
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid user ID")
+		return
+	}
+
+	// Проверяем, что это тестовый пользователь (проверим имя)
+	user, err := db.GetUserByID(int(userID))
+	if err != nil {
+		writeJSONError(w, http.StatusNotFound, "User not found")
+		return
+	}
+
+	// Удаляем только если имя состоит из цифр (тестовый пользователь)
+	isTestUser := true
+	for _, char := range user.FirstName {
+		if char < '0' || char > '9' {
+			isTestUser = false
+			break
+		}
+	}
+
+	if !isTestUser {
+		writeJSONError(w, http.StatusForbidden, "Can only delete test users")
+		return
+	}
+
+	err = db.DeleteUser(userID)
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "Failed to delete user: "+err.Error())
+		return
+	}
+
+	writeJSONSuccess(w, "Test user deleted successfully", map[string]int64{"deleted_user_id": userID})
+}
+
+// UpdateClient обновляет данные клиента.
+func UpdateClient(w http.ResponseWriter, r *http.Request) {
+	clientIDStr := chi.URLParam(r, "id")
+	clientID, err := strconv.ParseInt(clientIDStr, 10, 64)
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid client ID")
+		return
+	}
+
+	var req struct {
+		FirstName  string  `json:"firstName"`
+		LastName   *string `json:"lastName"`
+		Phone      *string `json:"phone"`
+		Username   *string `json:"username"`
+		CardNumber *string `json:"cardNumber"`
+		Role       string  `json:"role"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid JSON payload")
+		return
+	}
+
+	// Проверяем что клиент существует
+	user, err := db.GetUserByID(int(clientID))
+	if err != nil {
+		writeJSONError(w, http.StatusNotFound, "Client not found")
+		return
+	}
+
+	// Обновляем основные поля
+	if req.FirstName == "" {
+		writeJSONError(w, http.StatusBadRequest, "First name is required")
+		return
+	}
+
+	// Проверяем валидность роли
+	validRoles := map[string]bool{
+		"user":     true,
+		"driver":   true,
+		"operator": true,
+		"owner":    true,
+	}
+	if !validRoles[req.Role] {
+		writeJSONError(w, http.StatusBadRequest, "Invalid role")
+		return
+	}
+
+	// Обновляем имя
+	if err := db.UpdateUserField(user.ChatID, "first_name", req.FirstName); err != nil {
+		log.Printf("UpdateClient: ошибка обновления имени для клиента %d: %v", clientID, err)
+		writeJSONError(w, http.StatusInternalServerError, "Failed to update first name")
+		return
+	}
+
+	// Обновляем фамилию
+	if err := db.UpdateUserField(user.ChatID, "last_name", req.LastName); err != nil {
+		log.Printf("UpdateClient: ошибка обновления фамилии для клиента %d: %v", clientID, err)
+		writeJSONError(w, http.StatusInternalServerError, "Failed to update last name")
+		return
+	}
+
+	// Обновляем телефон
+	if err := db.UpdateUserField(user.ChatID, "phone", req.Phone); err != nil {
+		log.Printf("UpdateClient: ошибка обновления телефона для клиента %d: %v", clientID, err)
+		writeJSONError(w, http.StatusInternalServerError, "Failed to update phone")
+		return
+	}
+
+	// Обновляем nickname
+	if err := db.UpdateUserField(user.ChatID, "nickname", req.Username); err != nil {
+		log.Printf("UpdateClient: ошибка обновления nickname для клиента %d: %v", clientID, err)
+		writeJSONError(w, http.StatusInternalServerError, "Failed to update username")
+		return
+	}
+
+	// Обновляем номер карты
+	if err := db.UpdateUserField(user.ChatID, "card_number", req.CardNumber); err != nil {
+		log.Printf("UpdateClient: ошибка обновления номера карты для клиента %d: %v", clientID, err)
+		writeJSONError(w, http.StatusInternalServerError, "Failed to update card number")
+		return
+	}
+
+	// Обновляем роль
+	if err := db.UpdateUserRole(user.ChatID, req.Role); err != nil {
+		log.Printf("UpdateClient: ошибка обновления роли для клиента %d: %v", clientID, err)
+		writeJSONError(w, http.StatusInternalServerError, "Failed to update role")
+		return
+	}
+
+	log.Printf("API UpdateClient: данные клиента %d успешно обновлены", clientID)
+	writeJSONSuccess(w, "Client data updated successfully", map[string]int64{"client_id": clientID})
+}
+
+// BlockClient блокирует клиента.
+func BlockClient(w http.ResponseWriter, r *http.Request) {
+	clientIDStr := chi.URLParam(r, "id")
+	clientID, err := strconv.ParseInt(clientIDStr, 10, 64)
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid client ID")
+		return
+	}
+
+	var req struct {
+		Reason string `json:"reason"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid JSON payload")
+		return
+	}
+
+	if req.Reason == "" {
+		writeJSONError(w, http.StatusBadRequest, "Block reason is required")
+		return
+	}
+
+	// Проверяем что клиент существует
+	user, err := db.GetUserByID(int(clientID))
+	if err != nil {
+		writeJSONError(w, http.StatusNotFound, "Client not found")
+		return
+	}
+
+	if user.IsBlocked {
+		writeJSONError(w, http.StatusBadRequest, "Client is already blocked")
+		return
+	}
+
+	// Блокируем клиента
+	if err := db.BlockUser(user.ChatID, req.Reason); err != nil {
+		log.Printf("BlockClient: ошибка блокировки клиента %d: %v", clientID, err)
+		writeJSONError(w, http.StatusInternalServerError, "Failed to block client")
+		return
+	}
+
+	log.Printf("API BlockClient: клиент %d заблокирован с причиной: %s", clientID, req.Reason)
+	writeJSONSuccess(w, "Client blocked successfully", map[string]interface{}{
+		"client_id": clientID,
+		"reason":    req.Reason,
+	})
+}
+
+// UnblockClient разблокирует клиента.
+func UnblockClient(w http.ResponseWriter, r *http.Request) {
+	clientIDStr := chi.URLParam(r, "id")
+	clientID, err := strconv.ParseInt(clientIDStr, 10, 64)
+	if err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid client ID")
+		return
+	}
+
+	// Проверяем что клиент существует
+	user, err := db.GetUserByID(int(clientID))
+	if err != nil {
+		writeJSONError(w, http.StatusNotFound, "Client not found")
+		return
+	}
+
+	if !user.IsBlocked {
+		writeJSONError(w, http.StatusBadRequest, "Client is not blocked")
+		return
+	}
+
+	// Разблокируем клиента
+	if err := db.UnblockUser(user.ChatID); err != nil {
+		log.Printf("UnblockClient: ошибка разблокировки клиента %d: %v", clientID, err)
+		writeJSONError(w, http.StatusInternalServerError, "Failed to unblock client")
+		return
+	}
+
+	log.Printf("API UnblockClient: клиент %d разблокирован", clientID)
+	writeJSONSuccess(w, "Client unblocked successfully", map[string]int64{"client_id": clientID})
+}

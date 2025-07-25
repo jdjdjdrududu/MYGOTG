@@ -1,0 +1,18 @@
+[0;1;31m×[0m nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (]8;;file://4992085-da33960/usr/lib/systemd/system/nginx.service/usr/lib/systemd/system/nginx.service]8;;; [0;1;38;5;185mdisabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;31mfailed[0m (Result: exit-code) since Fri 2025-07-25 13:19:48 MSK; 14s ago
+       Docs: ]8;;man:nginx(8)man:nginx(8)]8;;
+    Process: 81687 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
+    Process: 81688 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; [0;1;31m(code=exited, status=1/FAILURE)[0m
+        CPU: 23ms
+
+Jul 25 13:19:46 4992085-da33960 nginx[81688]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+Jul 25 13:19:46 4992085-da33960 nginx[81688]: nginx: [emerg] bind() to [::]:80 failed (98: Address already in use)
+Jul 25 13:19:47 4992085-da33960 nginx[81688]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+Jul 25 13:19:47 4992085-da33960 nginx[81688]: nginx: [emerg] bind() to [::]:80 failed (98: Address already in use)
+Jul 25 13:19:47 4992085-da33960 nginx[81688]: nginx: [emerg] bind() to 0.0.0.0:80 failed (98: Address already in use)
+Jul 25 13:19:47 4992085-da33960 nginx[81688]: nginx: [emerg] bind() to [::]:80 failed (98: Address already in use)
+Jul 25 13:19:48 4992085-da33960 nginx[81688]: nginx: [emerg] still could not bind()
+Jul 25 13:19:48 4992085-da33960 systemd[1]: [0;1;39m[0;1;31m[0;1;39mnginx.service: Control process exited, code=exited, status=1/FAILURE[0m
+Jul 25 13:19:48 4992085-da33960 systemd[1]: [0;1;38;5;185m[0;1;39m[0;1;38;5;185mnginx.service: Failed with result 'exit-code'.[0m
+Jul 25 13:19:48 4992085-da33960 systemd[1]: [0;1;31m[0;1;39m[0;1;31mFailed to start nginx.service - A high performance web server and a reverse proxy server.[0m

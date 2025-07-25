@@ -1098,3 +1098,43 @@ func GetOrdersByChatIDAndMultipleStatuses(userChatID int64, statuses []string, p
 
 	return orders, nil
 }
+
+
+// GetAllOrders возвращает все заказы из базы данных
+func GetAllOrders() ([]models.Order, error) {
+	query := `
+	SELECT 
+		o.id, o.user_id, o.category, o.description, o.cost, 
+		o.payment, o.status, o.created_at, o.updated_at, o.name
+	FROM orders o
+	ORDER BY o.created_at DESC
+	`
+
+	rows, err := DB.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка выполнения запроса GetAllOrders: %v", err)
+	}
+	defer rows.Close()
+
+	var orders []models.Order
+	for rows.Next() {
+		var order models.Order
+
+		err := rows.Scan(
+			&order.ID, &order.UserID, &order.Category, &order.Description,
+			&order.Cost, &order.Payment, &order.Status, &order.CreatedAt,
+			&order.UpdatedAt, &order.Name,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ошибка сканирования строки в GetAllOrders: %v", err)
+		}
+
+		orders = append(orders, order)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("ошибка итерации строк в GetAllOrders: %v", err)
+	}
+
+	return orders, nil
+}

@@ -133,7 +133,7 @@ class TelegramWebApp {
             console.log('🔄 Loading core modules...');
             
             // Wait a bit for all scripts to load
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 50));
             
             // Check that module classes are available
             const moduleClasses = {
@@ -192,22 +192,40 @@ class TelegramWebApp {
     }
 
     /**
-     * Load user data
+     * Load user data with caching and optimizations
      */
     async loadUser() {
         try {
             console.log('🔄 Loading user data...');
+            
+            // Check cache first for faster loading
+            const cachedUser = this.getCachedUser();
+            if (cachedUser) {
+                this.state.user = cachedUser;
+                console.log('✅ User profile loaded from cache:', cachedUser);
+                
+                // Load fresh data in background
+                this.loadUserInBackground();
+                return;
+            }
             
             const apiModule = this.modules.get('api');
             if (!apiModule) {
                 throw new Error('API module not available');
             }
 
+            // Set timeout for faster perceived loading
+            const profilePromise = apiModule.request('user/profile');
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Profile load timeout')), 3000)
+            );
+
             try {
-                // Try to load real profile first
-                const response = await apiModule.request('user/profile');
+                // Try to load real profile first with timeout
+                const response = await Promise.race([profilePromise, timeoutPromise]);
                 const user = response.data || response;
                 this.state.user = user;
+                this.cacheUser(user);
                 console.log('✅ User profile loaded from API:', user);
             } catch (error) {
                 console.warn('⚠️ Failed to load user profile from API, trying fallback...');
@@ -219,6 +237,7 @@ class TelegramWebApp {
                         if (testResponse.ok) {
                             const testUser = await testResponse.json();
                             this.state.user = testUser.data || testUser;
+                            this.cacheUser(this.state.user);
                             console.log('✅ Test user profile loaded:', this.state.user);
                         } else {
                             throw new Error('Test profile also failed');
@@ -236,6 +255,7 @@ class TelegramWebApp {
                             Phone: '',
                             IsBlocked: false
                         };
+                        this.cacheUser(this.state.user);
                     }
                 } else {
                     throw error;
@@ -245,6 +265,69 @@ class TelegramWebApp {
         } catch (error) {
             console.error('❌ Failed to load user data:', error);
             throw new Error('Не удалось загрузить данные пользователя');
+        }
+    }
+
+    /**
+     * Load user data in background for cache update
+     */
+    async loadUserInBackground() {
+        try {
+            const apiModule = this.modules.get('api');
+            if (!apiModule) return;
+
+            const response = await apiModule.request('user/profile');
+            const user = response.data || response;
+            
+            // Update cache and state if data changed
+            if (JSON.stringify(user) !== JSON.stringify(this.state.user)) {
+                this.state.user = user;
+                this.cacheUser(user);
+                console.log('✅ User profile updated in background');
+            }
+        } catch (error) {
+            console.warn('Background user profile update failed:', error);
+        }
+    }
+
+    /**
+     * Cache user data for faster loading
+     */
+    cacheUser(user) {
+        try {
+            const cacheData = {
+                user: user,
+                timestamp: Date.now(),
+                ttl: 5 * 60 * 1000 // 5 minutes TTL
+            };
+            localStorage.setItem('telegram_user_cache', JSON.stringify(cacheData));
+        } catch (error) {
+            console.warn('Failed to cache user data:', error);
+        }
+    }
+
+    /**
+     * Get cached user data if valid
+     */
+    getCachedUser() {
+        try {
+            const cached = localStorage.getItem('telegram_user_cache');
+            if (!cached) return null;
+
+            const cacheData = JSON.parse(cached);
+            const now = Date.now();
+            
+            // Check if cache is still valid
+            if (now - cacheData.timestamp < cacheData.ttl) {
+                return cacheData.user;
+            } else {
+                // Clear expired cache
+                localStorage.removeItem('telegram_user_cache');
+                return null;
+            }
+        } catch (error) {
+            console.warn('Failed to read cached user data:', error);
+            return null;
         }
     }
 
@@ -423,11 +506,11 @@ class TelegramWebApp {
      */
     async loadOrders() {
         try {
-            const operatorModule = this.modules.get('operator');
-            if (operatorModule) {
-                await operatorModule.loadOrders();
+            const uiModule = this.modules.get('ui');
+            if (uiModule) {
+                await uiModule.loadOrders();
             } else {
-                console.warn('Operator module not available');
+                console.warn('UI module not available');
             }
         } catch (error) {
             console.error('Failed to load orders:', error);

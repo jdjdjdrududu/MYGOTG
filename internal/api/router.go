@@ -28,7 +28,9 @@ func SetupRoutes(r *chi.Mux, deps ApiDependencies) {
 	r.Get("/api/test/profile", GetTestUserProfile)
 	r.Get("/api/test/orders", GetTestOrders)
 	r.Get("/api/test/clients", GetTestClients)
+	r.Get("/api/test/stats", GetTestStats)
 	r.Get("/api/test/order/{id}", GetTestOrderDetails)
+	r.Delete("/api/test/user/{id}", DeleteTestUser)
 
 	// Этот маршрут должен быть публичным, но с проверкой доступа внутри обработчика
 	// Используем MediaProxyHandler вместо ServeMediaHandler для безопасной отдачи файлов
@@ -57,9 +59,13 @@ func SetupRoutes(r *chi.Mux, deps ApiDependencies) {
 
 			r.Get("/orders", GetOrders)
 			r.Get("/clients", GetClients)
+			r.Get("/stats", GetStats)
 			// Маршрут оператора остается связанным с CreateOrder, который не отправляет уведомления.
 			r.Post("/create-order", CreateOrder)
 			r.Get("/client/{id}", GetClientDetails)
+			r.Put("/client/{id}", UpdateClient)
+			r.Post("/client/{id}/block", BlockClient)
+			r.Post("/client/{id}/unblock", UnblockClient)
 			r.Get("/order/{id}", GetOrderDetails)
 			r.Post("/order/{id}/action", HandleAdminOrderAction)
 			r.Post("/order/{id}/update-field", UpdateOrderFieldHandler)

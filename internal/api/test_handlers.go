@@ -288,6 +288,50 @@ func GetTestClients(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// GetTestStats возвращает тестовые данные статистики
+func GetTestStats(w http.ResponseWriter, r *http.Request) {
+	stats := map[string]interface{}{
+		"totalOrders":     156,
+		"totalRevenue":    2850000,
+		"totalClients":    89,
+		"avgOrderTime":    4.2,
+		"ordersGrowth":    15,
+		"revenueGrowth":   23,
+		"clientsGrowth":   8,
+		"monthlyRevenue": []map[string]interface{}{
+			{"month": "Январь", "revenue": 245000},
+			{"month": "Февраль", "revenue": 289000},
+			{"month": "Март", "revenue": 356000},
+			{"month": "Апрель", "revenue": 412000},
+			{"month": "Май", "revenue": 387000},
+			{"month": "Июнь", "revenue": 445000},
+		},
+		"ordersByType": map[string]int{
+			"демонтаж":           70,
+			"вывоз_мусора":      55,
+			"демонтаж_и_вывоз":  31,
+		},
+		"topClients": []map[string]interface{}{
+			{"name": "Иван Сидоров", "orders": 15, "revenue": 185000},
+			{"name": "Андрей Кузнецов", "orders": 8, "revenue": 92000},
+			{"name": "Елена Васильева", "orders": 3, "revenue": 35000},
+		},
+		"topEmployees": []map[string]interface{}{
+			{"name": "Сергей Козлов", "role": "driver", "orders": 156, "rating": 4.9},
+			{"name": "Дмитрий Петров", "role": "owner", "orders": 0, "rating": 5.0},
+		},
+	}
+
+	response := map[string]interface{}{
+		"status":  "success",
+		"message": "Statistics retrieved successfully",
+		"data":    stats,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 // GetTestOrderDetails возвращает детали тестового заказа
 func GetTestOrderDetails(w http.ResponseWriter, r *http.Request) {
 	orderID := chi.URLParam(r, "id")

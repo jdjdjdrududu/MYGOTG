@@ -368,6 +368,23 @@ class APIModule {
     }
 
     /**
+     * Fetch statistics (alias for analytics with default period)
+     */
+    async fetchStats() {
+        try {
+            const user = this.app?.state?.user;
+            if (!user || !['operator', 'admin', 'owner'].includes(user.Role)) {
+                throw new Error('Access denied: Statistics data is only available for operators and admins');
+            }
+            
+            return await this.fetchAnalytics('month');
+        } catch (error) {
+            console.error('Failed to fetch stats:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Create order
      */
     async createOrder(orderData) {

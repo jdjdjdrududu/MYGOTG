@@ -629,3 +629,69 @@ func GetOrdersByUserID(userID int64) ([]models.Order, error) {
 
 	return orders, nil
 }
+
+
+// GetAllUsers возвращает всех пользователей из базы данных
+func GetAllUsers() ([]models.User, error) {
+	query := `
+	SELECT 
+		id, first_name, last_name, nickname, phone, role, 
+		chat_id, is_blocked
+	FROM users
+	ORDER BY id DESC
+	`
+
+	rows, err := DB.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка выполнения запроса GetAllUsers: %v", err)
+	}
+	defer rows.Close()
+
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+
+		err := rows.Scan(
+			&user.ID, &user.FirstName, &user.LastName, &user.Nickname,
+			&user.Phone, &user.Role, &user.ChatID, &user.IsBlocked,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("ошибка сканирования строки в GetAllUsers: %v", err)
+		}
+
+
+		users = append(users, user)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("ошибка итерации строк в GetAllUsers: %v", err)
+	}
+
+	return users, nil
+}
+
+// DeleteUser удаляет пользователя из базы данных
+// DeleteUser removes a user from the database
+func DeleteUser(userID int64) error {
+	// Сначала проверим, есть ли у пользователя заказы
+	var orderCount int
+	err := DB.QueryRow("SELECT COUNT(*) FROM orders WHERE user_id = $1", userID).Scan(&orderCount)
+	if err != nil {
+		log.Printf("DeleteUser: ошибка проверки заказов для userID %d: %v", userID, err)
+		return err
+	}
+	
+	if orderCount > 0 {
+		log.Printf("DeleteUser: пользователь %d имеет %d заказов, удаление невозможно", userID, orderCount)
+		return fmt.Errorf("невозможно удалить пользователя с заказами")
+	}
+	
+	_, err = DB.Exec("DELETE FROM users WHERE id = $1", userID)
+	if err != nil {
+		log.Printf("DeleteUser: ошибка удаления пользователя %d: %v", userID, err)
+		return err
+	}
+	
+	log.Printf("Пользователь %d успешно удален", userID)
+	return nil
+}

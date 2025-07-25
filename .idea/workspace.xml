@@ -4,45 +4,59 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="888c8670-110a-4234-9f80-d454b52bea15" name="Changes" comment="" />
+    <list default="true" id="1d3bed79-7516-4736-8227-75bb8ea48adc" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/data_source_mapping.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/forwardedPorts.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BLACK_SCREEN_FIX.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/BOTTOM_NAVIGATION_FIX.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FINAL_FIX_APPLIED.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FRONTEND_API_FIXES.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FRONTEND_DIAGNOSIS.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FRONTEND_DIAGNOSIS_COMPLETE.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FRONTEND_DIAGNOSTIC_REPORT.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/GIT_AUTO_PUSH_README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Original" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/auto_git_push.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/check_frontend.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/git-auto-push.service" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/api/handlers.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/api/handlers.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/api/router.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/api/router.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/api/test_handlers.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/api/test_handlers.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/db/order_ops.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/db/order_ops.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/db/user_ops.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/db/user_ops.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main" beforeDir="false" afterPath="$PROJECT_DIR$/main" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server.log" beforeDir="false" afterPath="$PROJECT_DIR$/server.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_auto_push.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/watch_and_push.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/js/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/js/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/js/modules/api.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/js/modules/api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/js/modules/operator-panel.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/js/modules/operator-panel.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webapp/js/modules/ui.js" beforeDir="false" afterPath="$PROJECT_DIR$/webapp/js/modules/ui.js" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="JavaScript File" />
-        <option value="Go File" />
-      </list>
-    </option>
-  </component>
-  <component name="GOROOT" url="file://$PROJECT_DIR$/../../go1.24.4" />
+  <component name="GOROOT" url="file://$USER_HOME$/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.24.5.linux-amd64" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/main.go" root0="FORCE_HIGHLIGHTING" />
-  </component>
-  <component name="KubernetesApiPersistence">{}</component>
-  <component name="KubernetesApiProvider">{
-  &quot;isMigrated&quot;: true
-}</component>
-  <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
 }</component>
-  <component name="ProjectId" id="2yDYHYenZih2JTcXZw43dfwbidp" />
+  <component name="ProjectId" id="30L7C7pMjfP1MhuJqjOLPIB5Ykp" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "DefaultGoTemplateProperty": "Go File",
     "Go Build.go build Original.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.GoLinterPluginOnboarding": "true",
@@ -55,16 +69,10 @@
     "RunOnceActivity.go.modules.go.list.on.any.changes.was.set": "true",
     "go.import.settings.migrated": "true",
     "go.sdk.automatically.set": "true",
-    "last_opened_file_path": "/home/gobotuser/go/src/mygotelegrambot/webapp",
+    "last_opened_file_path": "/root",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "settings.qodana"
-  },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "postgresql"
-    ]
+    "nodejs_package_manager_path": "npm"
   }
 }]]></component>
   <component name="RdControllerToolWindowsLayoutState" isNewUi="true">
@@ -75,42 +83,32 @@
       <window_info id="Commit_Guest" show_stripe_button="false" />
       <window_info id="Pull Requests" />
       <window_info id="Learn" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.50067025" visible="true" weight="0.18570496" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.29785156" />
       <window_info id="Commit" order="1" weight="0.25" />
-      <window_info id="Structure" order="2" sideWeight="0.49932975" side_tool="true" weight="0.32975262" />
+      <window_info id="Structure" order="2" side_tool="true" weight="0.32975262" />
+      <window_info anchor="bottom" id="Database Changes" />
       <window_info anchor="bottom" id="TypeScript" />
-      <window_info anchor="bottom" id="Debug" />
       <window_info anchor="bottom" id="File Transfer" />
+      <window_info anchor="bottom" id="Find" />
       <window_info anchor="bottom" id="Version Control" order="0" />
       <window_info anchor="bottom" id="Problems" order="1" />
-      <window_info anchor="bottom" id="Problems View" order="2" weight="0.33028084" />
-      <window_info anchor="bottom" id="Terminal" order="3" weight="0.33028084" />
-      <window_info anchor="bottom" id="Services" order="4" weight="0.33028084" />
-      <window_info anchor="bottom" id="Run" order="5" weight="0.33028084" />
-      <window_info anchor="bottom" id="Find" order="6" weight="0.32941902" />
-      <window_info anchor="bottom" id="TODO" order="7" weight="0.037423313" />
-      <window_info anchor="bottom" id="Database Changes" order="8" weight="0.3302696" />
+      <window_info anchor="bottom" id="Problems View" order="2" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="3" visible="true" weight="0.27757353" />
+      <window_info anchor="bottom" id="Services" order="4" weight="0.55085784" />
+      <window_info anchor="bottom" id="Run" order="5" weight="0.55085784" />
+      <window_info anchor="bottom" id="Windsurf Console" order="6" weight="0.3302696" />
+      <window_info anchor="bottom" id="TODO" order="7" weight="0.31066176" />
+      <window_info anchor="right" id="make" side_tool="true" />
       <window_info anchor="right" id="Coverage" side_tool="true" />
-      <window_info anchor="right" id="Notifications" order="0" weight="0.29785156" />
-      <window_info anchor="right" id="AIAssistant" order="1" weight="0.29785156" />
-      <window_info active="true" anchor="right" id="Database" order="2" visible="true" weight="0.18570496" />
+      <window_info anchor="right" content_ui="combo" id="Notifications" order="0" weight="0.25" />
+      <window_info anchor="right" id="AIAssistant" order="1" weight="0.25" />
+      <window_info active="true" anchor="right" id="Database" order="2" visible="true" weight="0.06477864" />
       <window_info anchor="right" id="Gradle" order="3" weight="0.25" />
       <window_info anchor="right" id="Maven" order="4" weight="0.25" />
-      <window_info anchor="right" id="Endpoints" order="5" weight="0.12792969" />
-      <window_info anchor="right" id="make" order="6" side_tool="true" weight="0.12792969" />
+      <window_info active="true" anchor="right" id="Cascade" order="5" visible="true" weight="0.32975262" />
+      <window_info anchor="right" id="Endpoints" order="6" weight="0.32975262" />
+      <window_info anchor="right" id="documentation.v2" order="7" side_tool="true" visible="true" weight="0.32975262" />
     </layout>
-  </component>
-  <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/webapp" />
-      <recent name="$PROJECT_DIR$/webapp/lottie" />
-      <recent name="$PROJECT_DIR$" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/webapp" />
-      <recent name="$PROJECT_DIR$/webapp/html" />
-      <recent name="C:\Users\Asus\GolandProjects\mygotelegrambot\Original\webapp\internal" />
-    </key>
   </component>
   <component name="RunManager">
     <configuration name="go build Original" type="GoApplicationRunConfiguration" factoryName="Go Application" nameIsGenerated="true">
@@ -133,11 +131,11 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="888c8670-110a-4234-9f80-d454b52bea15" name="Changes" comment="" />
-      <created>1749370532123</created>
+      <changelist id="1d3bed79-7516-4736-8227-75bb8ea48adc" name="Changes" comment="" />
+      <created>1753394868809</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1749370532123</updated>
+      <updated>1753394868809</updated>
     </task>
     <servers />
   </component>
@@ -146,16 +144,5 @@
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
-          <url>file://$PROJECT_DIR$/internal/api/handlers.go</url>
-          <line>199</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
 </project>

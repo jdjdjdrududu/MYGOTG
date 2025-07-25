@@ -66,7 +66,7 @@ class OperatorPanelModule {
     /**
      * Load orders
      */
-    async loadOrders(status = 'active', search = '') {
+    async loadOrders(status = '', search = '') {
         try {
             // Use the correct API endpoint based on user role
             const user = this.app.state?.user;
