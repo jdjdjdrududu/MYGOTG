@@ -138,7 +138,7 @@ class TelegramWebApp {
             // Check that module classes are available
             const moduleClasses = {
                 'utils': window.UtilsModule,
-                'api': window.APIModule,
+                'api': window.APIService,
                 'ui': window.UIModule
             };
             
@@ -215,7 +215,7 @@ class TelegramWebApp {
             }
 
             // Set timeout for faster perceived loading
-            const profilePromise = apiModule.request('user/profile');
+            const profilePromise = apiModule.getUserProfile();
             const timeoutPromise = new Promise((_, reject) => 
                 setTimeout(() => reject(new Error('Profile load timeout')), 3000)
             );
@@ -276,7 +276,7 @@ class TelegramWebApp {
             const apiModule = this.modules.get('api');
             if (!apiModule) return;
 
-            const response = await apiModule.request('user/profile');
+            const response = await apiModule.getUserProfile();
             const user = response.data || response;
             
             // Update cache and state if data changed
@@ -581,9 +581,31 @@ class TelegramWebApp {
     /**
      * Load profile
      */
-    loadProfile() {
-        // Profile info is already updated in updateUserInfo()
-        console.log('✅ Profile panel loaded');
+    async loadProfile() {
+        console.log('🔄 Loading profile panel...');
+        
+        const profilePanel = document.getElementById('profile-panel');
+        if (!profilePanel) {
+            console.error('Profile panel not found');
+            return;
+        }
+        
+        // Show skeleton loader
+        SkeletonLoader.showProfileSkeleton(profilePanel);
+        
+        try {
+            // Make sure we have user data
+            if (!this.state.user) {
+                await this.loadUser();
+            }
+            
+            // Update the UI with user info
+            this.updateUserInfo();
+            console.log('✅ Profile panel loaded');
+        } catch (error) {
+            console.error('❌ Failed to load profile:', error);
+            profilePanel.innerHTML = '<div class="error-message">Ошибка загрузки профиля</div>';
+        }
     }
 
     /**
